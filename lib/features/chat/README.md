@@ -1,0 +1,3 @@
+# chat Feature
+
+Foundation placeholder for the `chat` feature. Future implementation must preserve the presentation, domain, data, widgets, and models boundaries.

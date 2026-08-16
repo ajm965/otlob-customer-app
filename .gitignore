@@ -1,0 +1,30 @@
+# Dart and Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Generated code
+*.freezed.dart
+*.g.dart
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Platform and OS
+.DS_Store
+android/.gradle/
+ios/Pods/
+ios/.symlinks/
+macos/Pods/
+macos/.symlinks/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
