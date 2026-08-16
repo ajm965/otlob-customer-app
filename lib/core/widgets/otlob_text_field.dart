@@ -18,7 +18,9 @@ class OtlobTextField extends StatelessWidget {
     this.autofillHints,
     this.onChanged,
     this.onSubmitted,
+    this.onTap,
     this.enabled = true,
+    this.readOnly = false,
     this.obscureText = false,
     this.maxLines = 1,
     super.key,
@@ -39,7 +41,9 @@ class OtlobTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final VoidCallback? onTap;
   final bool enabled;
+  final bool readOnly;
   final bool obscureText;
   final int? maxLines;
 
@@ -65,7 +69,9 @@ class OtlobTextField extends StatelessWidget {
         autofillHints: autofillHints,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
+        onTap: onTap,
         enabled: enabled,
+        readOnly: readOnly,
         obscureText: obscureText,
         maxLines: obscureText ? 1 : maxLines,
       ),
@@ -82,8 +88,10 @@ class OtlobSearchField extends StatelessWidget {
     this.clearSemanticLabel,
     this.onChanged,
     this.onSubmitted,
+    this.onTap,
     this.onClear,
     this.enabled = true,
+    this.readOnly = false,
     super.key,
   }) : assert(
          onClear == null || clearSemanticLabel != null,
@@ -97,8 +105,10 @@ class OtlobSearchField extends StatelessWidget {
   final String? clearSemanticLabel;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final VoidCallback? onTap;
   final VoidCallback? onClear;
   final bool enabled;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +121,9 @@ class OtlobSearchField extends StatelessWidget {
       textInputAction: TextInputAction.search,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
+      onTap: onTap,
       enabled: enabled,
+      readOnly: readOnly,
       suffix: onClear == null
           ? null
           : IconButton(

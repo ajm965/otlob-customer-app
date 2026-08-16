@@ -1,5 +1,8 @@
 enum AppRoute {
-  bootstrap('/');
+  home('/home'),
+  services('/services'),
+  requests('/requests'),
+  profile('/profile');
 
   const AppRoute(this.path);
 

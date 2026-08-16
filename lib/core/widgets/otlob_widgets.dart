@@ -3,6 +3,7 @@ export 'otlob_badge.dart';
 export 'otlob_bottom_sheet.dart';
 export 'otlob_button.dart';
 export 'otlob_card.dart';
+export 'otlob_navigation_bar.dart';
 export 'otlob_primitives.dart';
 export 'otlob_state.dart';
 export 'otlob_text_field.dart';

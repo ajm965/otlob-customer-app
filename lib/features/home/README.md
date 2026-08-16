@@ -1,3 +1,5 @@
-# home Feature
+# Home Feature
 
-Foundation placeholder for the `home` feature. Future implementation must preserve the presentation, domain, data, widgets, and models boundaries.
+Sprint C5 provides a customer-facing discovery page, feature-owned cards, and
+isolated local mock fixtures. It contains no domain behavior, repository,
+backend integration, or request mutation.

@@ -16,10 +16,50 @@ class OtlobLocalizations {
 
   bool get isArabic => locale.languageCode == 'ar';
 
-  String get bootstrapTitle => isArabic ? 'أطلب' : 'Otlob';
-
-  String get bootstrapMessage =>
-      isArabic ? 'تجهيز تطبيق أطلب' : 'Preparing the Otlob customer app';
+  String get appName => isArabic ? 'أطلب' : 'Otlob';
+  String get home => isArabic ? 'الرئيسية' : 'Home';
+  String get services => isArabic ? 'الخدمات' : 'Services';
+  String get requests => isArabic ? 'الطلبات' : 'Requests';
+  String get profile => isArabic ? 'حسابي' : 'Profile';
+  String get welcome => isArabic ? 'مرحباً بك' : 'Welcome';
+  String get discoverServices =>
+      isArabic ? 'ما الخدمة التي تحتاجها؟' : 'What service do you need?';
+  String get searchServices => isArabic ? 'ابحث عن خدمة' : 'Search services';
+  String get categories => isArabic ? 'فئات الخدمات' : 'Service categories';
+  String get popularServices =>
+      isArabic ? 'خدمات مقترحة' : 'Recommended services';
+  String get recentRequests => isArabic ? 'أحدث الطلبات' : 'Recent requests';
+  String get viewAll => isArabic ? 'عرض الكل' : 'View all';
+  String get createRequest => isArabic ? 'إنشاء طلب' : 'Create request';
+  String get browseServices => isArabic ? 'تصفح الخدمات' : 'Browse services';
+  String get browseServicesDescription => isArabic
+      ? 'اختر الخدمة المناسبة من الفئات المتاحة'
+      : 'Choose the right service from the available categories';
+  String get serviceDetails =>
+      isArabic ? 'تفاصيل الخدمة لاحقاً' : 'Service details coming later';
+  String get allRequests => isArabic ? 'كل الطلبات' : 'All requests';
+  String get noRequests => isArabic ? 'لا توجد طلبات' : 'No requests yet';
+  String get noRequestsMessage => isArabic
+      ? 'ستظهر طلباتك هنا بعد إنشاء أول طلب'
+      : 'Your requests will appear here after you create one';
+  String get pending => isArabic ? 'قيد الانتظار' : 'Pending';
+  String get inProgress => isArabic ? 'قيد التنفيذ' : 'In progress';
+  String get completed => isArabic ? 'مكتمل' : 'Completed';
+  String get cancelled => isArabic ? 'ملغي' : 'Cancelled';
+  String get accountOverview => isArabic ? 'ملخص الحساب' : 'Account overview';
+  String get customerName => isArabic ? 'عميل أطلب' : 'Otlob customer';
+  String get customerContact => isArabic ? 'بيانات تجريبية' : 'Mock profile';
+  String get profileInformation =>
+      isArabic ? 'معلومات الملف الشخصي' : 'Profile information';
+  String get accountOptions => isArabic ? 'خيارات الحساب' : 'Account options';
+  String get personalInformation =>
+      isArabic ? 'المعلومات الشخصية' : 'Personal information';
+  String get language => isArabic ? 'اللغة' : 'Language';
+  String get helpPlaceholder =>
+      isArabic ? 'المساعدة (قريباً)' : 'Help (coming later)';
+  String get placeholderActionMessage => isArabic
+      ? 'هذه الخطوة غير مفعلة في النسخة التجريبية'
+      : 'This action is not enabled in the mock experience';
 
   static OtlobLocalizations of(BuildContext context) {
     return Localizations.of<OtlobLocalizations>(context, OtlobLocalizations)!;

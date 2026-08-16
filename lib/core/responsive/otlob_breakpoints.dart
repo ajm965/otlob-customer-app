@@ -6,6 +6,13 @@ abstract final class OtlobBreakpoints {
   static const double expanded = 1200;
 }
 
+abstract final class OtlobLayoutConstraints {
+  static const double contentMaxWidth = 840;
+  static const double cardMaxWidth = 280;
+  static const double categoryCardHeight = 120;
+  static const double serviceCardHeight = 180;
+}
+
 enum OtlobWindowClass { compact, medium, expanded, large }
 
 extension OtlobResponsiveContext on BuildContext {

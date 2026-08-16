@@ -1,3 +1,5 @@
-# profile Feature
+# Profile Feature
 
-Foundation placeholder for the `profile` feature. Future implementation must preserve the presentation, domain, data, widgets, and models boundaries.
+Sprint C5 provides a read-only customer summary and placeholder account options
+using isolated local mock fixtures. It contains no authentication, editing,
+persistence, settings behavior, or backend integration.
