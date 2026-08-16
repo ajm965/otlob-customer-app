@@ -8,6 +8,7 @@ import '../../../core/theme/otlob_design_system.dart';
 import '../../services/data/mock/mock_services.dart';
 import '../data/mock/mock_request_creation.dart';
 import '../widgets/request_flow_widgets.dart';
+import '../widgets/request_information_card.dart';
 import 'state/request_flow_controller.dart';
 
 class RequestReviewPage extends ConsumerWidget {
@@ -31,7 +32,7 @@ class RequestReviewPage extends ConsumerWidget {
           ).textTheme.bodyLarge?.copyWith(color: context.otlobColors.mutedText),
         ),
         const SizedBox(height: OtlobSpacing.lg),
-        RequestReviewCard(
+        RequestInformationCard(
           title: localizations.selectedService,
           value:
               service?.title(isArabic: localizations.isArabic) ??
@@ -39,7 +40,7 @@ class RequestReviewPage extends ConsumerWidget {
           icon: Icons.design_services_outlined,
         ),
         const SizedBox(height: OtlobSpacing.md),
-        RequestReviewCard(
+        RequestInformationCard(
           title: localizations.requestDetails,
           value: draft.description.trim().isEmpty
               ? localizations.noDescription
@@ -47,7 +48,7 @@ class RequestReviewPage extends ConsumerWidget {
           icon: Icons.notes_outlined,
         ),
         const SizedBox(height: OtlobSpacing.md),
-        RequestReviewCard(
+        RequestInformationCard(
           title: localizations.serviceLocation,
           value: address == null
               ? localizations.locationRequired

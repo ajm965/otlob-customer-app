@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/customer_navigation_shell.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
+import '../../features/requests/presentation/request_detail_page.dart';
 import '../../features/requests/presentation/request_details_page.dart';
 import '../../features/requests/presentation/request_flow_scope.dart';
 import '../../features/requests/presentation/request_location_page.dart';
@@ -62,6 +63,17 @@ class AppRouter {
                   name: AppRoute.requests.name,
                   builder: (BuildContext context, GoRouterState state) =>
                       const RequestsPage(),
+                  routes: <RouteBase>[
+                    GoRoute(
+                      path: ':requestId',
+                      name: AppRoute.requestDetail.name,
+                      builder: (BuildContext context, GoRouterState state) {
+                        return RequestDetailPage(
+                          requestId: state.pathParameters['requestId']!,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

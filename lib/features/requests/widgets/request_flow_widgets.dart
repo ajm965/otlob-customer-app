@@ -115,39 +115,3 @@ class MockAddressCard extends StatelessWidget {
     );
   }
 }
-
-class RequestReviewCard extends StatelessWidget {
-  const RequestReviewCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    super.key,
-  });
-
-  final String title;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return OtlobCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: OtlobSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(title, style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: OtlobSpacing.xs),
-                Text(value, style: Theme.of(context).textTheme.bodyLarge),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

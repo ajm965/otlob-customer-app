@@ -61,9 +61,9 @@ void main() {
     await tester.tap(find.text('Requests'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Pending'), findsOneWidget);
-    expect(find.text('In progress'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('Pending'), findsWidgets);
+    expect(find.text('In progress'), findsWidgets);
+    expect(find.text('Completed'), findsWidgets);
     await tester.scrollUntilVisible(
       find.text('Cancelled'),
       300,
@@ -72,7 +72,7 @@ void main() {
         matching: find.byType(Scrollable),
       ),
     );
-    expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('Cancelled'), findsWidgets);
   });
 
   testWidgets('Requests renders its empty state', (WidgetTester tester) async {

@@ -38,6 +38,7 @@ class OtlobLocalizations {
   String get serviceDetails =>
       isArabic ? 'تفاصيل الخدمة لاحقاً' : 'Service details coming later';
   String get allRequests => isArabic ? 'كل الطلبات' : 'All requests';
+  String get all => isArabic ? 'الكل' : 'All';
   String get noRequests => isArabic ? 'لا توجد طلبات' : 'No requests yet';
   String get noRequestsMessage => isArabic
       ? 'ستظهر طلباتك هنا بعد إنشاء أول طلب'
@@ -46,6 +47,19 @@ class OtlobLocalizations {
   String get inProgress => isArabic ? 'قيد التنفيذ' : 'In progress';
   String get completed => isArabic ? 'مكتمل' : 'Completed';
   String get cancelled => isArabic ? 'ملغي' : 'Cancelled';
+  String get requestReference => isArabic ? 'رقم الطلب' : 'Request reference';
+  String get requestService => isArabic ? 'الخدمة' : 'Service';
+  String get requestStatus => isArabic ? 'حالة الطلب' : 'Request status';
+  String get requestDescription => isArabic ? 'الوصف' : 'Description';
+  String get requestLocation => isArabic ? 'الموقع' : 'Location';
+  String get requestDate => isArabic ? 'التاريخ' : 'Date';
+  String get requestNotFound =>
+      isArabic ? 'الطلب غير موجود' : 'Request not found';
+  String get requestNotFoundMessage => isArabic
+      ? 'تعذر العثور على هذا الطلب التجريبي'
+      : 'This mock request could not be found';
+  String get backToRequests =>
+      isArabic ? 'العودة إلى الطلبات' : 'Back to requests';
   String get accountOverview => isArabic ? 'ملخص الحساب' : 'Account overview';
   String get customerName => isArabic ? 'عميل أطلب' : 'Otlob customer';
   String get customerContact => isArabic ? 'بيانات تجريبية' : 'Mock profile';

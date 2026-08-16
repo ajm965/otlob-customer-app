@@ -2,6 +2,7 @@ enum AppRoute {
   home('/home'),
   services('/services'),
   requests('/requests'),
+  requestDetail('/requests/:requestId'),
   profile('/profile'),
   requestStart('/request/new/:serviceId'),
   requestDetails('/request/new/:serviceId/details'),
@@ -16,5 +17,10 @@ enum AppRoute {
   String pathForService(String serviceId) {
     assert(path.contains(':serviceId'), 'Route does not accept a service ID.');
     return path.replaceFirst(':serviceId', Uri.encodeComponent(serviceId));
+  }
+
+  String pathForRequest(String requestId) {
+    assert(path.contains(':requestId'), 'Route does not accept a request ID.');
+    return path.replaceFirst(':requestId', Uri.encodeComponent(requestId));
   }
 }
