@@ -2,6 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/customer_navigation_shell.dart';
+import '../../features/authentication/data/mock/mock_authentication.dart';
+import '../../features/authentication/presentation/authentication_entry_page.dart';
+import '../../features/authentication/presentation/authentication_phone_page.dart';
+import '../../features/authentication/presentation/authentication_scope.dart';
+import '../../features/authentication/presentation/authentication_success_page.dart';
+import '../../features/authentication/presentation/authentication_verification_page.dart';
+import '../../features/authentication/presentation/registration_profile_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
 import '../../features/requests/presentation/request_detail_page.dart';
@@ -86,6 +93,63 @@ class AppRouter {
                       const ProfilePage(),
                 ),
               ],
+            ),
+          ],
+        ),
+        ShellRoute(
+          builder: (BuildContext context, GoRouterState state, Widget child) {
+            return AuthenticationScope(child: child);
+          },
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoute.authentication.path,
+              name: AppRoute.authentication.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationEntryPage(),
+            ),
+            GoRoute(
+              path: AppRoute.signIn.path,
+              name: AppRoute.signIn.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationPhonePage(
+                    flow: MockAuthenticationFlow.signIn,
+                  ),
+            ),
+            GoRoute(
+              path: AppRoute.signInVerification.path,
+              name: AppRoute.signInVerification.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationVerificationPage(
+                    flow: MockAuthenticationFlow.signIn,
+                  ),
+            ),
+            GoRoute(
+              path: AppRoute.registration.path,
+              name: AppRoute.registration.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationPhonePage(
+                    flow: MockAuthenticationFlow.registration,
+                  ),
+            ),
+            GoRoute(
+              path: AppRoute.registrationVerification.path,
+              name: AppRoute.registrationVerification.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationVerificationPage(
+                    flow: MockAuthenticationFlow.registration,
+                  ),
+            ),
+            GoRoute(
+              path: AppRoute.registrationProfile.path,
+              name: AppRoute.registrationProfile.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RegistrationProfilePage(),
+            ),
+            GoRoute(
+              path: AppRoute.authenticationSuccess.path,
+              name: AppRoute.authenticationSuccess.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const AuthenticationSuccessPage(),
             ),
           ],
         ),

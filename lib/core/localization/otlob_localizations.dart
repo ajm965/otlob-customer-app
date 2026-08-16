@@ -124,6 +124,82 @@ class OtlobLocalizations {
       isArabic ? 'الانتقال إلى الطلبات' : 'Go to Requests';
   String get continueLabel => isArabic ? 'متابعة' : 'Continue';
   String get optional => isArabic ? 'اختياري' : 'Optional';
+  String get authentication => isArabic ? 'الدخول إلى أطلب' : 'Access Otlob';
+  String get authenticationEntryMessage => isArabic
+      ? 'سجّل الدخول أو أنشئ حساب عميل باستخدام رقم الجوال'
+      : 'Sign in or create a customer account with your mobile number';
+  String get signIn => isArabic ? 'تسجيل الدخول' : 'Sign in';
+  String get createAccount => isArabic ? 'إنشاء حساب' : 'Create account';
+  String get signInTitle => isArabic ? 'تسجيل الدخول' : 'Customer sign in';
+  String get signInMessage => isArabic
+      ? 'أدخل رقم جوالك للمتابعة إلى التحقق'
+      : 'Enter your mobile number to continue to verification';
+  String get registrationTitle =>
+      isArabic ? 'إنشاء حساب عميل' : 'Create customer account';
+  String get registrationMessage => isArabic
+      ? 'ابدأ برقم جوال سعودي لإكمال التسجيل'
+      : 'Start with a Saudi mobile number to register';
+  String get phoneNumber => isArabic ? 'رقم الجوال' : 'Mobile number';
+  String get phoneHint => '+966';
+  String get phoneFormatHelp => isArabic
+      ? 'استخدم الصيغة الدولية السعودية التي تبدأ بـ +966'
+      : 'Use Saudi international format beginning with +966';
+  String get phoneRequired =>
+      isArabic ? 'أدخل رقم الجوال' : 'Enter your mobile number';
+  String get phoneInvalid => isArabic
+      ? 'أدخل رقماً سعودياً صحيحاً بالصيغة الدولية'
+      : 'Enter a valid Saudi number in international format';
+  String get sendMockCode =>
+      isArabic ? 'متابعة إلى رمز تجريبي' : 'Continue to mock code';
+  String get localAuthenticationNotice => isArabic
+      ? 'هذه تجربة محلية فقط. لن يتم إرسال رمز أو الاتصال بأي خدمة.'
+      : 'This is a local demo only. No code is sent and no service is contacted.';
+  String get verificationTitle =>
+      isArabic ? 'التحقق من رقم الجوال' : 'Verify mobile number';
+  String verificationMessage(String phone) => isArabic
+      ? 'أدخل أي قيمة غير فارغة لعرض التحقق المحلي للرقم $phone'
+      : 'Enter any non-empty value to demonstrate local verification for $phone';
+  String get verificationCode =>
+      isArabic ? 'رمز التحقق التجريبي' : 'Mock verification code';
+  String get verificationCodeHelp => isArabic
+      ? 'طول الرمز غير محدد في العقود الحالية'
+      : 'Code length is not defined by the current contracts';
+  String get verificationCodeRequired => isArabic
+      ? 'أدخل رمز التحقق التجريبي'
+      : 'Enter the mock verification code';
+  String get verifyMockCode => isArabic ? 'تحقق محلياً' : 'Verify locally';
+  String get registrationProfile =>
+      isArabic ? 'إكمال بيانات الحساب' : 'Complete account details';
+  String get registrationProfileMessage => isArabic
+      ? 'الاسم اختياري، والموافقة على الشروط والخصوصية مطلوبة'
+      : 'Name is optional; Terms and Privacy acceptance is required';
+  String get fullNameOptional =>
+      isArabic ? 'الاسم الكامل (اختياري)' : 'Full name (optional)';
+  String get fullNameHint =>
+      isArabic ? 'أدخل اسمك إن رغبت' : 'Enter your name if you wish';
+  String get acceptTermsAndPrivacy => isArabic
+      ? 'أوافق على الشروط وسياسة الخصوصية'
+      : 'I accept the Terms and Privacy Policy';
+  String get termsAcceptanceRequired => isArabic
+      ? 'يجب الموافقة على الشروط وسياسة الخصوصية'
+      : 'Accept the Terms and Privacy Policy to continue';
+  String get finishMockRegistration =>
+      isArabic ? 'إكمال التسجيل التجريبي' : 'Complete mock registration';
+  String get authenticationComplete =>
+      isArabic ? 'اكتمل الدخول التجريبي' : 'Mock authentication complete';
+  String get authenticationCompleteMessage => isArabic
+      ? 'تمت محاكاة رحلة الدخول محلياً فقط، ولم يتم إنشاء جلسة حقيقية.'
+      : 'The journey was simulated locally only; no real session was created.';
+  String get goToHome => isArabic ? 'الانتقال إلى الرئيسية' : 'Go to Home';
+  String get alreadyHaveAccount =>
+      isArabic ? 'لديك حساب بالفعل؟' : 'Already have an account?';
+  String get needCustomerAccount =>
+      isArabic ? 'ليس لديك حساب؟' : 'Need a customer account?';
+  String get authenticationStepUnavailable => isArabic
+      ? 'ابدأ بإدخال رقم الجوال لإكمال هذه الخطوة'
+      : 'Start with your mobile number to complete this step';
+  String get restartAuthentication =>
+      isArabic ? 'العودة إلى بداية الدخول' : 'Back to authentication';
 
   String requestStep(int current, int total) {
     return isArabic ? 'الخطوة $current من $total' : 'Step $current of $total';

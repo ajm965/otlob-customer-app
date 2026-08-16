@@ -1,4 +1,11 @@
 enum AppRoute {
+  authentication('/auth'),
+  signIn('/auth/sign-in'),
+  signInVerification('/auth/sign-in/verification'),
+  registration('/auth/registration'),
+  registrationVerification('/auth/registration/verification'),
+  registrationProfile('/auth/registration/profile'),
+  authenticationSuccess('/auth/success'),
   home('/home'),
   services('/services'),
   requests('/requests'),
