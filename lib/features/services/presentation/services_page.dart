@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/localization/otlob_localizations.dart';
+import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
 import '../data/mock/mock_services.dart';
 import '../widgets/service_cards.dart';
@@ -94,9 +96,10 @@ class ServicesPage extends StatelessWidget {
                       return ServiceCard(
                         service: MockServices.popular[index],
                         isArabic: localizations.isArabic,
-                        onTap: () => _showDeferredMessage(
-                          context,
-                          localizations.serviceDetails,
+                        onTap: () => context.push(
+                          AppRoute.requestStart.pathForService(
+                            MockServices.popular[index].id,
+                          ),
                         ),
                       );
                     },

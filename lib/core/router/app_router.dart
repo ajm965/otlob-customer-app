@@ -4,6 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../app/customer_navigation_shell.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
+import '../../features/requests/presentation/request_details_page.dart';
+import '../../features/requests/presentation/request_flow_scope.dart';
+import '../../features/requests/presentation/request_location_page.dart';
+import '../../features/requests/presentation/request_review_page.dart';
+import '../../features/requests/presentation/request_start_page.dart';
+import '../../features/requests/presentation/request_success_page.dart';
 import '../../features/requests/presentation/requests_page.dart';
 import '../../features/services/presentation/services_page.dart';
 import 'app_route.dart';
@@ -68,6 +74,46 @@ class AppRouter {
                       const ProfilePage(),
                 ),
               ],
+            ),
+          ],
+        ),
+        ShellRoute(
+          builder: (BuildContext context, GoRouterState state, Widget child) {
+            return RequestFlowScope(
+              serviceId: state.pathParameters['serviceId']!,
+              child: child,
+            );
+          },
+          routes: <RouteBase>[
+            GoRoute(
+              path: AppRoute.requestStart.path,
+              name: AppRoute.requestStart.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RequestStartPage(),
+            ),
+            GoRoute(
+              path: AppRoute.requestDetails.path,
+              name: AppRoute.requestDetails.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RequestDetailsPage(),
+            ),
+            GoRoute(
+              path: AppRoute.requestLocation.path,
+              name: AppRoute.requestLocation.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RequestLocationPage(),
+            ),
+            GoRoute(
+              path: AppRoute.requestReview.path,
+              name: AppRoute.requestReview.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RequestReviewPage(),
+            ),
+            GoRoute(
+              path: AppRoute.requestSuccess.path,
+              name: AppRoute.requestSuccess.name,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const RequestSuccessPage(),
             ),
           ],
         ),
