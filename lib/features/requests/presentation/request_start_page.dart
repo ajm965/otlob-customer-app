@@ -45,6 +45,9 @@ class RequestStartPage extends ConsumerWidget {
                 ),
               );
             }
+            final String? description = service.description(
+              isArabic: localizations.isArabic,
+            );
             return RequestStepScaffold(
               title: localizations.requestStart,
               currentStep: 1,
@@ -62,13 +65,15 @@ class RequestStartPage extends ConsumerWidget {
                         service.title(isArabic: localizations.isArabic),
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: OtlobSpacing.sm),
-                      Text(
-                        service.description(isArabic: localizations.isArabic),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: context.otlobColors.mutedText,
+                      if (description != null) ...<Widget>[
+                        const SizedBox(height: OtlobSpacing.sm),
+                        Text(
+                          description,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: context.otlobColors.mutedText,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

@@ -24,7 +24,7 @@ class ServiceCategoryCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(
-            _iconFor(category.visual),
+            _iconFor(category.visual) ?? Icons.category_outlined,
             size: OtlobIconSizes.large,
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -56,6 +56,7 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? description = service.description(isArabic: isArabic);
     return OtlobCard(
       onTap: onTap,
       semanticLabel: service.title(isArabic: isArabic),
@@ -63,7 +64,9 @@ class ServiceCard extends StatelessWidget {
         children: <Widget>[
           OtlobAvatar(
             radius: OtlobIconSizes.medium,
-            child: Icon(_iconFor(service.visual)),
+            child: Icon(
+              _iconFor(service.visual) ?? Icons.design_services_outlined,
+            ),
           ),
           const SizedBox(width: OtlobSpacing.md),
           Expanded(
@@ -74,15 +77,17 @@ class ServiceCard extends StatelessWidget {
                   service.title(isArabic: isArabic),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: OtlobSpacing.xs),
-                Text(
-                  service.description(isArabic: isArabic),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: context.otlobColors.mutedText,
+                if (description != null) ...<Widget>[
+                  const SizedBox(height: OtlobSpacing.xs),
+                  Text(
+                    description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: context.otlobColors.mutedText,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -94,7 +99,7 @@ class ServiceCard extends StatelessWidget {
   }
 }
 
-IconData _iconFor(ServiceVisual visual) {
+IconData? _iconFor(ServiceVisual? visual) {
   return switch (visual) {
     ServiceVisual.cleaning => Icons.cleaning_services_outlined,
     ServiceVisual.airConditioning => Icons.ac_unit,
@@ -102,5 +107,6 @@ IconData _iconFor(ServiceVisual visual) {
     ServiceVisual.electrical => Icons.electrical_services_outlined,
     ServiceVisual.maintenance => Icons.handyman_outlined,
     ServiceVisual.moving => Icons.local_shipping_outlined,
+    null => null,
   };
 }

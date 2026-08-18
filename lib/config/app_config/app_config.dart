@@ -9,4 +9,6 @@ class AppConfig {
 
   final EnvironmentConfig environment;
   final String? initialLocale;
+
+  String get apiBaseUrl => environment.apiBaseUrl;
 }

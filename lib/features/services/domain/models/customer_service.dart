@@ -12,13 +12,15 @@ class ServiceCategory {
     required this.id,
     required this.titleAr,
     required this.titleEn,
-    required this.visual,
+    this.visual,
   });
 
   final String id;
   final String titleAr;
   final String titleEn;
-  final ServiceVisual visual;
+
+  /// Present only on local mock fixtures. Platform catalog DTOs do not include it.
+  final ServiceVisual? visual;
 
   String title({required bool isArabic}) => isArabic ? titleAr : titleEn;
 }
@@ -28,20 +30,33 @@ class CustomerService {
     required this.id,
     required this.titleAr,
     required this.titleEn,
-    required this.descriptionAr,
-    required this.descriptionEn,
-    required this.visual,
+    this.categoryId,
+    this.descriptionAr,
+    this.descriptionEn,
+    this.visual,
   });
 
   final String id;
   final String titleAr;
   final String titleEn;
-  final String descriptionAr;
-  final String descriptionEn;
-  final ServiceVisual visual;
+  final String? categoryId;
+
+  /// Present only on local mock fixtures. Platform catalog DTOs do not include it.
+  final String? descriptionAr;
+
+  /// Present only on local mock fixtures. Platform catalog DTOs do not include it.
+  final String? descriptionEn;
+
+  /// Present only on local mock fixtures. Platform catalog DTOs do not include it.
+  final ServiceVisual? visual;
 
   String title({required bool isArabic}) => isArabic ? titleAr : titleEn;
 
-  String description({required bool isArabic}) =>
-      isArabic ? descriptionAr : descriptionEn;
+  String? description({required bool isArabic}) {
+    final String? value = isArabic ? descriptionAr : descriptionEn;
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    return value;
+  }
 }

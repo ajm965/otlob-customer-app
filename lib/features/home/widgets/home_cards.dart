@@ -26,7 +26,7 @@ class HomeCategoryCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(
-            _iconFor(category.visual),
+            _iconFor(category.visual) ?? Icons.category_outlined,
             color: Theme.of(context).colorScheme.primary,
             size: OtlobIconSizes.large,
           ),
@@ -58,13 +58,14 @@ class HomeRecommendedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? description = service.description(isArabic: isArabic);
     return OtlobCard(
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Icon(
-            _iconFor(service.visual),
+            _iconFor(service.visual) ?? Icons.design_services_outlined,
             color: Theme.of(context).colorScheme.primary,
             size: OtlobIconSizes.large,
           ),
@@ -75,15 +76,17 @@ class HomeRecommendedCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: OtlobSpacing.xs),
-          Text(
-            service.description(isArabic: isArabic),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: context.otlobColors.mutedText,
+          if (description != null) ...<Widget>[
+            const SizedBox(height: OtlobSpacing.xs),
+            Text(
+              description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: context.otlobColors.mutedText,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -148,7 +151,7 @@ class HomeRecentRequestCard extends StatelessWidget {
   }
 }
 
-IconData _iconFor(ServiceVisual visual) {
+IconData? _iconFor(ServiceVisual? visual) {
   return switch (visual) {
     ServiceVisual.cleaning => Icons.cleaning_services_outlined,
     ServiceVisual.airConditioning => Icons.ac_unit,
@@ -156,5 +159,6 @@ IconData _iconFor(ServiceVisual visual) {
     ServiceVisual.electrical => Icons.electrical_services_outlined,
     ServiceVisual.maintenance => Icons.handyman_outlined,
     ServiceVisual.moving => Icons.local_shipping_outlined,
+    null => null,
   };
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
 
 import '../config/app_config/app_config.dart';
 import '../config/environment/environment_config.dart';
 import '../core/errors/bootstrap_error_handler.dart';
+import '../core/network/platform_api_client.dart';
 import '../core/router/app_router.dart';
+import '../features/services/data/http/http_service_catalog_repository.dart';
 import 'otlob_app.dart';
 
 abstract final class AppBootstrap {
@@ -19,7 +22,14 @@ abstract final class AppBootstrap {
       final EnvironmentConfig resolvedEnvironment =
           environment ?? EnvironmentConfig.fromDartDefine();
       final AppConfig config = AppConfig.fromEnvironment(resolvedEnvironment);
-      final AppRouter router = AppRouter();
+      final AppRouter router = AppRouter(
+        serviceRepository: HttpServiceCatalogRepository(
+          apiClient: PlatformApiClient(
+            client: http.Client(),
+            baseUrl: config.apiBaseUrl,
+          ),
+        ),
+      );
 
       runApp(OtlobApp(config: config, router: router));
     });
