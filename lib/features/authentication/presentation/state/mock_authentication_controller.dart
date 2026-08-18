@@ -1,53 +1,65 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/mock/mock_authentication.dart';
+import '../../../../core/errors/integration_failure.dart';
+import '../../domain/models/authentication_state.dart';
+import '../../domain/repositories/authentication_repository.dart';
 
-final NotifierProvider<MockAuthenticationController, MockAuthenticationState>
+final Provider<AuthenticationRepository> authenticationRepositoryProvider =
+    Provider<AuthenticationRepository>(
+      (Ref ref) =>
+          throw StateError('Authentication repository was not provided.'),
+    );
+
+final NotifierProvider<MockAuthenticationController, AuthenticationState>
 mockAuthenticationProvider =
-    NotifierProvider<MockAuthenticationController, MockAuthenticationState>(
+    NotifierProvider<MockAuthenticationController, AuthenticationState>(
       MockAuthenticationController.new,
     );
 
-class MockAuthenticationController extends Notifier<MockAuthenticationState> {
-  static final RegExp _e164Pattern = RegExp(r'^\+[1-9]\d{7,14}$');
-
+class MockAuthenticationController extends Notifier<AuthenticationState> {
   @override
-  MockAuthenticationState build() => const MockAuthenticationState();
+  AuthenticationState build() => const AuthenticationState();
 
-  static bool isValidKsaPhone(String value) {
-    final String phone = value.trim();
-    return phone.startsWith('+966') && _e164Pattern.hasMatch(phone);
-  }
+  bool isValidKsaPhone(String value) =>
+      ref.read(authenticationRepositoryProvider).isValidKsaPhone(value);
 
-  void begin(MockAuthenticationFlow flow, String phone) {
-    state = MockAuthenticationState(flow: flow, phone: phone.trim());
-  }
-
-  bool verifyOtpLocally(String otp) {
-    if (otp.trim().isEmpty || state.flow == null || state.phone.isEmpty) {
-      return false;
+  Future<bool> begin(AuthenticationFlow flow, String phone) async {
+    final IntegrationResult<AuthenticationState> result = await ref
+        .read(authenticationRepositoryProvider)
+        .beginPhoneAuthentication(flow, phone);
+    if (result case IntegrationSuccess<AuthenticationState>(:final value)) {
+      state = value;
+      return true;
     }
-    state = state.copyWith(isOtpVerified: true);
-    if (state.flow == MockAuthenticationFlow.signIn) {
-      state = state.copyWith(isComplete: true);
-    }
-    return true;
+    return false;
   }
 
-  bool completeRegistration({
+  Future<bool> verifyOtpLocally(String otp) async {
+    final IntegrationResult<AuthenticationState> result = await ref
+        .read(authenticationRepositoryProvider)
+        .verifyCode(state, otp);
+    if (result case IntegrationSuccess<AuthenticationState>(:final value)) {
+      state = value;
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> completeRegistration({
     required String fullName,
     required bool hasAcceptedTerms,
-  }) {
-    if (state.flow != MockAuthenticationFlow.registration ||
-        !state.isOtpVerified ||
-        !hasAcceptedTerms) {
-      return false;
+  }) async {
+    final IntegrationResult<AuthenticationState> result = await ref
+        .read(authenticationRepositoryProvider)
+        .completeRegistration(
+          state,
+          fullName: fullName,
+          hasAcceptedTerms: hasAcceptedTerms,
+        );
+    if (result case IntegrationSuccess<AuthenticationState>(:final value)) {
+      state = value;
+      return true;
     }
-    state = state.copyWith(
-      fullName: fullName.trim(),
-      hasAcceptedTerms: true,
-      isComplete: true,
-    );
-    return true;
+    return false;
   }
 }

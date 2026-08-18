@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_authentication.dart';
+import '../domain/models/authentication_state.dart';
 import '../widgets/authentication_scaffold.dart';
 import 'state/mock_authentication_controller.dart';
 
 class AuthenticationVerificationPage extends ConsumerStatefulWidget {
   const AuthenticationVerificationPage({required this.flow, super.key});
 
-  final MockAuthenticationFlow flow;
+  final AuthenticationFlow flow;
 
   @override
   ConsumerState<AuthenticationVerificationPage> createState() =>
@@ -36,24 +36,29 @@ class _AuthenticationVerificationPageState
       setState(() => _errorText = localizations.verificationCodeRequired);
       return;
     }
-    final bool verified = ref
+    ref
         .read(mockAuthenticationProvider.notifier)
-        .verifyOtpLocally(_codeController.text);
-    if (!verified) {
-      context.go(AppRoute.authentication.path);
-      return;
-    }
-    context.pushReplacement(
-      widget.flow == MockAuthenticationFlow.registration
-          ? AppRoute.registrationProfile.path
-          : AppRoute.authenticationSuccess.path,
-    );
+        .verifyOtpLocally(_codeController.text)
+        .then((bool verified) {
+          if (!mounted) {
+            return;
+          }
+          if (!verified) {
+            context.go(AppRoute.authentication.path);
+            return;
+          }
+          context.pushReplacement(
+            widget.flow == AuthenticationFlow.registration
+                ? AppRoute.registrationProfile.path
+                : AppRoute.authenticationSuccess.path,
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final MockAuthenticationState auth = ref.watch(mockAuthenticationProvider);
+    final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
     final bool hasRequiredState =
         auth.phone.isNotEmpty && auth.flow == widget.flow;
 

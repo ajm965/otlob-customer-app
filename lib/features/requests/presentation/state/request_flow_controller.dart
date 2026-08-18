@@ -1,24 +1,39 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/mock/mock_request_creation.dart';
+import '../../../../core/errors/integration_failure.dart';
+import '../../../services/domain/repositories/service_catalog_repository.dart';
+import '../../domain/models/customer_request.dart';
+import '../../domain/repositories/customer_request_repository.dart';
 
 final Provider<String> requestFlowServiceIdProvider = Provider<String>(
   (Ref ref) => throw StateError('Request flow service ID was not provided.'),
 );
 
-final NotifierProvider<RequestFlowController, MockRequestDraft>
-requestFlowProvider = NotifierProvider<RequestFlowController, MockRequestDraft>(
+final Provider<CustomerRequestRepository> customerRequestRepositoryProvider =
+    Provider<CustomerRequestRepository>(
+      (Ref ref) =>
+          throw StateError('Customer request repository was not provided.'),
+    );
+
+final Provider<ServiceCatalogRepository> serviceCatalogRepositoryProvider =
+    Provider<ServiceCatalogRepository>(
+      (Ref ref) =>
+          throw StateError('Service catalog repository was not provided.'),
+    );
+
+final NotifierProvider<RequestFlowController, RequestDraft>
+requestFlowProvider = NotifierProvider<RequestFlowController, RequestDraft>(
   RequestFlowController.new,
 );
 
-class RequestFlowController extends Notifier<MockRequestDraft> {
+class RequestFlowController extends Notifier<RequestDraft> {
   @override
-  MockRequestDraft build() {
-    return MockRequestDraft(serviceId: ref.watch(requestFlowServiceIdProvider));
+  RequestDraft build() {
+    return RequestDraft(serviceId: ref.watch(requestFlowServiceIdProvider));
   }
 
   void updateDescription(String description) {
-    state = MockRequestDraft(
+    state = RequestDraft(
       serviceId: state.serviceId,
       description: description,
       address: state.address,
@@ -26,8 +41,8 @@ class RequestFlowController extends Notifier<MockRequestDraft> {
     );
   }
 
-  void selectAddress(MockRequestAddress address) {
-    state = MockRequestDraft(
+  void selectAddress(RequestAddress address) {
+    state = RequestDraft(
       serviceId: state.serviceId,
       description: state.description,
       address: address,
@@ -35,15 +50,23 @@ class RequestFlowController extends Notifier<MockRequestDraft> {
     );
   }
 
-  bool submitMock() {
+  Future<bool> submitMock() async {
     if (!state.canSubmit) {
       return false;
     }
-    state = MockRequestDraft(
+    final IntegrationResult<RequestSubmission> result = await ref
+        .read(customerRequestRepositoryProvider)
+        .createRequest(state);
+    if (result case IntegrationError<RequestSubmission>()) {
+      return false;
+    }
+    final RequestSubmission submission =
+        (result as IntegrationSuccess<RequestSubmission>).value;
+    state = RequestDraft(
       serviceId: state.serviceId,
       description: state.description,
       address: state.address,
-      submission: MockRequestCreationData.submission,
+      submission: submission,
     );
     return true;
   }

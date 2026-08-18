@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_services.dart';
+import '../domain/models/customer_service.dart';
 
 class ServiceCategoryCard extends StatelessWidget {
   const ServiceCategoryCard({
@@ -11,7 +11,7 @@ class ServiceCategoryCard extends StatelessWidget {
     super.key,
   });
 
-  final MockServiceCategory category;
+  final ServiceCategory category;
   final bool isArabic;
   final VoidCallback onTap;
 
@@ -50,7 +50,7 @@ class ServiceCard extends StatelessWidget {
     super.key,
   });
 
-  final MockService service;
+  final CustomerService service;
   final bool isArabic;
   final VoidCallback onTap;
 
@@ -94,13 +94,13 @@ class ServiceCard extends StatelessWidget {
   }
 }
 
-IconData _iconFor(MockServiceVisual visual) {
+IconData _iconFor(ServiceVisual visual) {
   return switch (visual) {
-    MockServiceVisual.cleaning => Icons.cleaning_services_outlined,
-    MockServiceVisual.airConditioning => Icons.ac_unit,
-    MockServiceVisual.plumbing => Icons.plumbing,
-    MockServiceVisual.electrical => Icons.electrical_services_outlined,
-    MockServiceVisual.maintenance => Icons.handyman_outlined,
-    MockServiceVisual.moving => Icons.local_shipping_outlined,
+    ServiceVisual.cleaning => Icons.cleaning_services_outlined,
+    ServiceVisual.airConditioning => Icons.ac_unit,
+    ServiceVisual.plumbing => Icons.plumbing,
+    ServiceVisual.electrical => Icons.electrical_services_outlined,
+    ServiceVisual.maintenance => Icons.handyman_outlined,
+    ServiceVisual.moving => Icons.local_shipping_outlined,
   };
 }

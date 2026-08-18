@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_request_creation.dart';
+import '../domain/models/customer_request.dart';
 
 class RequestStepScaffold extends StatelessWidget {
   const RequestStepScaffold({
@@ -66,7 +66,7 @@ class MockAddressCard extends StatelessWidget {
     super.key,
   });
 
-  final MockRequestAddress address;
+  final RequestAddress address;
   final bool isArabic;
   final bool isSelected;
   final VoidCallback onTap;

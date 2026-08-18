@@ -1,14 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/integration_failure.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_home_data.dart';
+import '../../requests/domain/models/customer_request.dart';
+import '../../requests/domain/repositories/customer_request_repository.dart';
+import '../../services/domain/models/customer_service.dart';
+import '../../services/domain/repositories/service_catalog_repository.dart';
 import '../widgets/home_cards.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({
+    required this.serviceRepository,
+    required this.requestRepository,
+    super.key,
+  });
+
+  final ServiceCatalogRepository serviceRepository;
+  final CustomerRequestRepository requestRepository;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late final Future<_HomeContent> _content = _loadContent();
+
+  Future<_HomeContent> _loadContent() async {
+    final IntegrationResult<List<ServiceCategory>> categoriesResult =
+        await widget.serviceRepository.listCategories();
+    final IntegrationResult<List<CustomerService>> servicesResult = await widget
+        .serviceRepository
+        .listServices();
+    final IntegrationResult<List<CustomerRequest>> requestsResult = await widget
+        .requestRepository
+        .listRequests();
+    return _HomeContent(
+      categories: _valueOrEmpty(categoriesResult),
+      recommended: _valueOrEmpty(
+        servicesResult,
+      ).take(2).toList(growable: false),
+      recentRequests: _valueOrEmpty(
+        requestsResult,
+      ).take(2).toList(growable: false),
+    );
+  }
+
+  List<T> _valueOrEmpty<T>(IntegrationResult<List<T>> result) {
+    return switch (result) {
+      IntegrationSuccess<List<T>>(:final value) => value,
+      _ => <T>[],
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,154 +71,187 @@ class HomePage extends StatelessWidget {
             constraints: const BoxConstraints(
               maxWidth: OtlobLayoutConstraints.contentMaxWidth,
             ),
-            child: CustomScrollView(
-              key: const Key('home-scroll-view'),
-              slivers: <Widget>[
-                SliverPadding(
-                  padding: const EdgeInsets.all(OtlobSpacing.lg),
-                  sliver: SliverList.list(
-                    children: <Widget>[
-                      _WelcomeCard(localizations: localizations),
-                      const SizedBox(height: OtlobSpacing.lg),
-                      Text(
-                        localizations.discoverServices,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: OtlobSpacing.md),
-                      OtlobSearchField(
-                        hint: localizations.searchServices,
-                        semanticLabel: localizations.searchServices,
-                        readOnly: true,
-                        onTap: () => context.go(AppRoute.services.path),
-                      ),
-                    ],
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.sm,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.md,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: _SectionHeader(title: localizations.categories),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.none,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.xl,
-                  ),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((
-                      BuildContext context,
-                      int index,
-                    ) {
-                      return HomeCategoryCard(
-                        category: MockHomeData.categories[index],
-                        isArabic: localizations.isArabic,
-                        onTap: () => context.go(AppRoute.services.path),
-                      );
-                    }, childCount: MockHomeData.categories.length),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent:
-                              OtlobLayoutConstraints.cardMaxWidth,
-                          mainAxisExtent:
-                              OtlobLayoutConstraints.categoryCardHeight,
-                          crossAxisSpacing: OtlobSpacing.md,
-                          mainAxisSpacing: OtlobSpacing.md,
+            child: FutureBuilder<_HomeContent>(
+              future: _content,
+              builder:
+                  (BuildContext context, AsyncSnapshot<_HomeContent> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: OtlobLoading(
+                          semanticLabel: localizations.appName,
                         ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.none,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.md,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: _SectionHeader(
-                      title: localizations.popularServices,
-                      actionLabel: localizations.viewAll,
-                      onAction: () => context.go(AppRoute.services.path),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.none,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.xl,
-                  ),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((
-                      BuildContext context,
-                      int index,
-                    ) {
-                      return HomeRecommendedCard(
-                        service: MockHomeData.recommended[index],
-                        isArabic: localizations.isArabic,
-                        onTap: () => context.go(AppRoute.services.path),
                       );
-                    }, childCount: MockHomeData.recommended.length),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent:
-                              OtlobLayoutConstraints.cardMaxWidth,
-                          mainAxisExtent:
-                              OtlobLayoutConstraints.serviceCardHeight,
-                          crossAxisSpacing: OtlobSpacing.md,
-                          mainAxisSpacing: OtlobSpacing.md,
+                    }
+                    final _HomeContent content = snapshot.data!;
+                    return CustomScrollView(
+                      key: const Key('home-scroll-view'),
+                      slivers: <Widget>[
+                        SliverPadding(
+                          padding: const EdgeInsets.all(OtlobSpacing.lg),
+                          sliver: SliverList.list(
+                            children: <Widget>[
+                              _WelcomeCard(localizations: localizations),
+                              const SizedBox(height: OtlobSpacing.lg),
+                              Text(
+                                localizations.discoverServices,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
+                              const SizedBox(height: OtlobSpacing.md),
+                              OtlobSearchField(
+                                hint: localizations.searchServices,
+                                semanticLabel: localizations.searchServices,
+                                readOnly: true,
+                                onTap: () => context.go(AppRoute.services.path),
+                              ),
+                            ],
+                          ),
                         ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.none,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.md,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: _SectionHeader(
-                      title: localizations.recentRequests,
-                      actionLabel: localizations.viewAll,
-                      onAction: () => context.go(AppRoute.requests.path),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    OtlobSpacing.lg,
-                    OtlobSpacing.none,
-                    OtlobSpacing.lg,
-                    OtlobSpacing.xl,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: MockHomeData.recentRequests.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return HomeRecentRequestCard(
-                        request: MockHomeData.recentRequests[index],
-                        isArabic: localizations.isArabic,
-                      );
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const SizedBox(height: OtlobSpacing.md),
-                  ),
-                ),
-              ],
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.sm,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.md,
+                          ),
+                          sliver: SliverToBoxAdapter(
+                            child: _SectionHeader(
+                              title: localizations.categories,
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.none,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.xl,
+                          ),
+                          sliver: SliverGrid(
+                            delegate: SliverChildBuilderDelegate((
+                              BuildContext context,
+                              int index,
+                            ) {
+                              return HomeCategoryCard(
+                                category: content.categories[index],
+                                isArabic: localizations.isArabic,
+                                onTap: () => context.go(AppRoute.services.path),
+                              );
+                            }, childCount: content.categories.length),
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent:
+                                      OtlobLayoutConstraints.cardMaxWidth,
+                                  mainAxisExtent:
+                                      OtlobLayoutConstraints.categoryCardHeight,
+                                  crossAxisSpacing: OtlobSpacing.md,
+                                  mainAxisSpacing: OtlobSpacing.md,
+                                ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.none,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.md,
+                          ),
+                          sliver: SliverToBoxAdapter(
+                            child: _SectionHeader(
+                              title: localizations.popularServices,
+                              actionLabel: localizations.viewAll,
+                              onAction: () =>
+                                  context.go(AppRoute.services.path),
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.none,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.xl,
+                          ),
+                          sliver: SliverGrid(
+                            delegate: SliverChildBuilderDelegate((
+                              BuildContext context,
+                              int index,
+                            ) {
+                              return HomeRecommendedCard(
+                                service: content.recommended[index],
+                                isArabic: localizations.isArabic,
+                                onTap: () => context.go(AppRoute.services.path),
+                              );
+                            }, childCount: content.recommended.length),
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent:
+                                      OtlobLayoutConstraints.cardMaxWidth,
+                                  mainAxisExtent:
+                                      OtlobLayoutConstraints.serviceCardHeight,
+                                  crossAxisSpacing: OtlobSpacing.md,
+                                  mainAxisSpacing: OtlobSpacing.md,
+                                ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.none,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.md,
+                          ),
+                          sliver: SliverToBoxAdapter(
+                            child: _SectionHeader(
+                              title: localizations.recentRequests,
+                              actionLabel: localizations.viewAll,
+                              onAction: () =>
+                                  context.go(AppRoute.requests.path),
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            OtlobSpacing.lg,
+                            OtlobSpacing.none,
+                            OtlobSpacing.lg,
+                            OtlobSpacing.xl,
+                          ),
+                          sliver: SliverList.separated(
+                            itemCount: content.recentRequests.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return HomeRecentRequestCard(
+                                request: content.recentRequests[index],
+                                isArabic: localizations.isArabic,
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) =>
+                                    const SizedBox(height: OtlobSpacing.md),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class _HomeContent {
+  const _HomeContent({
+    required this.categories,
+    required this.recommended,
+    required this.recentRequests,
+  });
+
+  final List<ServiceCategory> categories;
+  final List<CustomerService> recommended;
+  final List<CustomerRequest> recentRequests;
 }
 
 class _WelcomeCard extends StatelessWidget {

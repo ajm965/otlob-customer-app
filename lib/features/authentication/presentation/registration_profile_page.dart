@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_authentication.dart';
+import '../domain/models/authentication_state.dart';
 import '../widgets/authentication_scaffold.dart';
 import 'state/mock_authentication_controller.dart';
 
@@ -26,7 +26,7 @@ class _RegistrationProfilePageState
   @override
   void initState() {
     super.initState();
-    final MockAuthenticationState state = ref.read(mockAuthenticationProvider);
+    final AuthenticationState state = ref.read(mockAuthenticationProvider);
     _nameController = TextEditingController(text: state.fullName);
     _hasAcceptedTerms = state.hasAcceptedTerms;
   }
@@ -42,25 +42,30 @@ class _RegistrationProfilePageState
       setState(() => _showTermsError = true);
       return;
     }
-    final bool completed = ref
+    ref
         .read(mockAuthenticationProvider.notifier)
         .completeRegistration(
           fullName: _nameController.text,
           hasAcceptedTerms: _hasAcceptedTerms,
-        );
-    if (!completed) {
-      context.go(AppRoute.authentication.path);
-      return;
-    }
-    context.pushReplacement(AppRoute.authenticationSuccess.path);
+        )
+        .then((bool completed) {
+          if (!mounted) {
+            return;
+          }
+          if (!completed) {
+            context.go(AppRoute.authentication.path);
+            return;
+          }
+          context.pushReplacement(AppRoute.authenticationSuccess.path);
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final MockAuthenticationState auth = ref.watch(mockAuthenticationProvider);
+    final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
     final bool hasRequiredState =
-        auth.flow == MockAuthenticationFlow.registration && auth.isOtpVerified;
+        auth.flow == AuthenticationFlow.registration && auth.isOtpVerified;
 
     if (!hasRequiredState) {
       return Scaffold(

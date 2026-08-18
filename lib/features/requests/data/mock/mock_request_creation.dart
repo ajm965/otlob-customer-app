@@ -1,58 +1,12 @@
-class MockRequestAddress {
-  const MockRequestAddress({
-    required this.id,
-    required this.labelAr,
-    required this.labelEn,
-    required this.line1Ar,
-    required this.line1En,
-    required this.cityAr,
-    required this.cityEn,
-    required this.countryCode,
-    required this.latitude,
-    required this.longitude,
-  });
+import '../../domain/models/customer_request.dart';
 
-  final String id;
-  final String labelAr;
-  final String labelEn;
-  final String line1Ar;
-  final String line1En;
-  final String cityAr;
-  final String cityEn;
-  final String countryCode;
-  final double latitude;
-  final double longitude;
-
-  String label({required bool isArabic}) => isArabic ? labelAr : labelEn;
-  String line1({required bool isArabic}) => isArabic ? line1Ar : line1En;
-  String city({required bool isArabic}) => isArabic ? cityAr : cityEn;
-}
-
-class MockRequestSubmission {
-  const MockRequestSubmission({required this.reference});
-
-  final String reference;
-}
-
-class MockRequestDraft {
-  const MockRequestDraft({
-    required this.serviceId,
-    this.description = '',
-    this.address,
-    this.submission,
-  });
-
-  final String serviceId;
-  final String description;
-  final MockRequestAddress? address;
-  final MockRequestSubmission? submission;
-
-  bool get canSubmit => serviceId.isNotEmpty && address != null;
-}
+typedef MockRequestAddress = RequestAddress;
+typedef MockRequestSubmission = RequestSubmission;
+typedef MockRequestDraft = RequestDraft;
 
 abstract final class MockRequestCreationData {
-  static const List<MockRequestAddress> addresses = <MockRequestAddress>[
-    MockRequestAddress(
+  static const List<RequestAddress> addresses = <RequestAddress>[
+    RequestAddress(
       id: 'mock-home-address',
       labelAr: 'المنزل التجريبي',
       labelEn: 'Mock home',
@@ -64,7 +18,7 @@ abstract final class MockRequestCreationData {
       latitude: 24.7,
       longitude: 46.7,
     ),
-    MockRequestAddress(
+    RequestAddress(
       id: 'mock-work-address',
       labelAr: 'العمل التجريبي',
       labelEn: 'Mock workplace',
@@ -78,7 +32,7 @@ abstract final class MockRequestCreationData {
     ),
   ];
 
-  static const MockRequestSubmission submission = MockRequestSubmission(
+  static const RequestSubmission submission = RequestSubmission(
     reference: 'MOCK-REQ-0001',
   );
 }

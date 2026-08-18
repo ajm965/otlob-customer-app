@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_request_creation.dart';
+import '../domain/models/customer_request.dart';
 import 'state/request_flow_controller.dart';
 
 class RequestSuccessPage extends ConsumerWidget {
@@ -14,8 +14,8 @@ class RequestSuccessPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final MockRequestSubmission? submission = ref.watch(
-      requestFlowProvider.select((MockRequestDraft draft) => draft.submission),
+    final RequestSubmission? submission = ref.watch(
+      requestFlowProvider.select((RequestDraft draft) => draft.submission),
     );
 
     return Scaffold(

@@ -1,27 +1,22 @@
-class MockProfile {
-  const MockProfile({
-    required this.displayNameAr,
-    required this.displayNameEn,
-    required this.summaryAr,
-    required this.summaryEn,
-  });
+import '../../../../core/errors/integration_failure.dart';
+import '../../domain/models/customer_profile.dart';
+import '../../domain/repositories/customer_profile_repository.dart';
 
-  final String displayNameAr;
-  final String displayNameEn;
-  final String summaryAr;
-  final String summaryEn;
-
-  String displayName({required bool isArabic}) =>
-      isArabic ? displayNameAr : displayNameEn;
-
-  String summary({required bool isArabic}) => isArabic ? summaryAr : summaryEn;
-}
+typedef MockProfile = CustomerProfile;
 
 abstract final class MockProfileData {
-  static const MockProfile customer = MockProfile(
+  static const CustomerProfile customer = CustomerProfile(
     displayNameAr: 'عميل أطلب',
     displayNameEn: 'Otlob customer',
     summaryAr: 'ملف شخصي تجريبي للعرض فقط',
     summaryEn: 'Mock profile for presentation only',
   );
+}
+
+class MockCustomerProfileRepository implements CustomerProfileRepository {
+  const MockCustomerProfileRepository();
+
+  @override
+  Future<IntegrationResult<CustomerProfile>> getCurrentProfile() async =>
+      const IntegrationSuccess<CustomerProfile>(MockProfileData.customer);
 }

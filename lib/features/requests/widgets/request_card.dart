@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_requests.dart';
+import '../domain/models/customer_request.dart';
 
 class RequestCard extends StatelessWidget {
   const RequestCard({required this.request, required this.onTap, super.key});
 
-  final MockRequest request;
+  final CustomerRequest request;
   final VoidCallback onTap;
 
   @override
@@ -86,23 +86,23 @@ class RequestCard extends StatelessWidget {
 class RequestStatusBadge extends StatelessWidget {
   const RequestStatusBadge({required this.status, super.key});
 
-  final MockRequestStatus status;
+  final CustomerRequestStatus status;
 
   @override
   Widget build(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     return OtlobBadge(
       label: switch (status) {
-        MockRequestStatus.pending => localizations.pending,
-        MockRequestStatus.inProgress => localizations.inProgress,
-        MockRequestStatus.completed => localizations.completed,
-        MockRequestStatus.cancelled => localizations.cancelled,
+        CustomerRequestStatus.pending => localizations.pending,
+        CustomerRequestStatus.inProgress => localizations.inProgress,
+        CustomerRequestStatus.completed => localizations.completed,
+        CustomerRequestStatus.cancelled => localizations.cancelled,
       },
       tone: switch (status) {
-        MockRequestStatus.pending => OtlobBadgeTone.warning,
-        MockRequestStatus.inProgress => OtlobBadgeTone.info,
-        MockRequestStatus.completed => OtlobBadgeTone.success,
-        MockRequestStatus.cancelled => OtlobBadgeTone.error,
+        CustomerRequestStatus.pending => OtlobBadgeTone.warning,
+        CustomerRequestStatus.inProgress => OtlobBadgeTone.info,
+        CustomerRequestStatus.completed => OtlobBadgeTone.success,
+        CustomerRequestStatus.cancelled => OtlobBadgeTone.error,
       },
     );
   }

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_authentication.dart';
+import '../domain/models/authentication_state.dart';
 import 'state/mock_authentication_controller.dart';
 
 class AuthenticationSuccessPage extends ConsumerWidget {
@@ -14,7 +14,7 @@ class AuthenticationSuccessPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final MockAuthenticationState auth = ref.watch(mockAuthenticationProvider);
+    final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
     return Scaffold(
       appBar: OtlobAppBar(
         title: Text(localizations.authenticationComplete),

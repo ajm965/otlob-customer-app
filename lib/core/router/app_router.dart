@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/customer_navigation_shell.dart';
 import '../../features/authentication/data/mock/mock_authentication.dart';
+import '../../features/authentication/domain/models/authentication_state.dart';
+import '../../features/authentication/domain/repositories/authentication_repository.dart';
 import '../../features/authentication/presentation/authentication_entry_page.dart';
 import '../../features/authentication/presentation/authentication_phone_page.dart';
 import '../../features/authentication/presentation/authentication_scope.dart';
@@ -10,7 +12,11 @@ import '../../features/authentication/presentation/authentication_success_page.d
 import '../../features/authentication/presentation/authentication_verification_page.dart';
 import '../../features/authentication/presentation/registration_profile_page.dart';
 import '../../features/home/presentation/home_page.dart';
+import '../../features/profile/data/mock/mock_profile.dart';
+import '../../features/profile/domain/repositories/customer_profile_repository.dart';
 import '../../features/profile/presentation/profile_page.dart';
+import '../../features/requests/data/mock/mock_requests.dart';
+import '../../features/requests/domain/repositories/customer_request_repository.dart';
 import '../../features/requests/presentation/request_detail_page.dart';
 import '../../features/requests/presentation/request_details_page.dart';
 import '../../features/requests/presentation/request_flow_scope.dart';
@@ -19,15 +25,36 @@ import '../../features/requests/presentation/request_review_page.dart';
 import '../../features/requests/presentation/request_start_page.dart';
 import '../../features/requests/presentation/request_success_page.dart';
 import '../../features/requests/presentation/requests_page.dart';
+import '../../features/services/data/mock/mock_services.dart';
+import '../../features/services/domain/repositories/service_catalog_repository.dart';
 import '../../features/services/presentation/services_page.dart';
 import 'app_route.dart';
 
 class AppRouter {
-  AppRouter() : router = _createRouter();
+  AppRouter({
+    AuthenticationRepository? authenticationRepository,
+    ServiceCatalogRepository? serviceRepository,
+    CustomerRequestRepository? requestRepository,
+    CustomerProfileRepository? profileRepository,
+  }) : router = _createRouter(
+         authenticationRepository:
+             authenticationRepository ?? const MockAuthenticationRepository(),
+         serviceRepository:
+             serviceRepository ?? const MockServiceCatalogRepository(),
+         requestRepository:
+             requestRepository ?? const MockCustomerRequestRepository(),
+         profileRepository:
+             profileRepository ?? const MockCustomerProfileRepository(),
+       );
 
   final GoRouter router;
 
-  static GoRouter _createRouter() {
+  static GoRouter _createRouter({
+    required AuthenticationRepository authenticationRepository,
+    required ServiceCatalogRepository serviceRepository,
+    required CustomerRequestRepository requestRepository,
+    required CustomerProfileRepository profileRepository,
+  }) {
     return GoRouter(
       initialLocation: AppRoute.home.path,
       routes: <RouteBase>[
@@ -49,7 +76,10 @@ class AppRouter {
                   path: AppRoute.home.path,
                   name: AppRoute.home.name,
                   builder: (BuildContext context, GoRouterState state) =>
-                      const HomePage(),
+                      HomePage(
+                        serviceRepository: serviceRepository,
+                        requestRepository: requestRepository,
+                      ),
                 ),
               ],
             ),
@@ -59,7 +89,7 @@ class AppRouter {
                   path: AppRoute.services.path,
                   name: AppRoute.services.name,
                   builder: (BuildContext context, GoRouterState state) =>
-                      const ServicesPage(),
+                      ServicesPage(repository: serviceRepository),
                 ),
               ],
             ),
@@ -69,7 +99,7 @@ class AppRouter {
                   path: AppRoute.requests.path,
                   name: AppRoute.requests.name,
                   builder: (BuildContext context, GoRouterState state) =>
-                      const RequestsPage(),
+                      RequestsPage(repository: requestRepository),
                   routes: <RouteBase>[
                     GoRoute(
                       path: ':requestId',
@@ -77,6 +107,7 @@ class AppRouter {
                       builder: (BuildContext context, GoRouterState state) {
                         return RequestDetailPage(
                           requestId: state.pathParameters['requestId']!,
+                          repository: requestRepository,
                         );
                       },
                     ),
@@ -90,7 +121,7 @@ class AppRouter {
                   path: AppRoute.profile.path,
                   name: AppRoute.profile.name,
                   builder: (BuildContext context, GoRouterState state) =>
-                      const ProfilePage(),
+                      ProfilePage(repository: profileRepository),
                 ),
               ],
             ),
@@ -98,7 +129,10 @@ class AppRouter {
         ),
         ShellRoute(
           builder: (BuildContext context, GoRouterState state, Widget child) {
-            return AuthenticationScope(child: child);
+            return AuthenticationScope(
+              repository: authenticationRepository,
+              child: child,
+            );
           },
           routes: <RouteBase>[
             GoRoute(
@@ -112,7 +146,7 @@ class AppRouter {
               name: AppRoute.signIn.name,
               builder: (BuildContext context, GoRouterState state) =>
                   const AuthenticationPhonePage(
-                    flow: MockAuthenticationFlow.signIn,
+                    flow: AuthenticationFlow.signIn,
                   ),
             ),
             GoRoute(
@@ -120,7 +154,7 @@ class AppRouter {
               name: AppRoute.signInVerification.name,
               builder: (BuildContext context, GoRouterState state) =>
                   const AuthenticationVerificationPage(
-                    flow: MockAuthenticationFlow.signIn,
+                    flow: AuthenticationFlow.signIn,
                   ),
             ),
             GoRoute(
@@ -128,7 +162,7 @@ class AppRouter {
               name: AppRoute.registration.name,
               builder: (BuildContext context, GoRouterState state) =>
                   const AuthenticationPhonePage(
-                    flow: MockAuthenticationFlow.registration,
+                    flow: AuthenticationFlow.registration,
                   ),
             ),
             GoRoute(
@@ -136,7 +170,7 @@ class AppRouter {
               name: AppRoute.registrationVerification.name,
               builder: (BuildContext context, GoRouterState state) =>
                   const AuthenticationVerificationPage(
-                    flow: MockAuthenticationFlow.registration,
+                    flow: AuthenticationFlow.registration,
                   ),
             ),
             GoRoute(
@@ -157,6 +191,8 @@ class AppRouter {
           builder: (BuildContext context, GoRouterState state, Widget child) {
             return RequestFlowScope(
               serviceId: state.pathParameters['serviceId']!,
+              repository: requestRepository,
+              serviceRepository: serviceRepository,
               child: child,
             );
           },

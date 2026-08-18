@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_home_data.dart';
+import '../../requests/domain/models/customer_request.dart';
+import '../../services/domain/models/customer_service.dart';
 
 class HomeCategoryCard extends StatelessWidget {
   const HomeCategoryCard({
@@ -11,7 +13,7 @@ class HomeCategoryCard extends StatelessWidget {
     super.key,
   });
 
-  final MockHomeCategory category;
+  final ServiceCategory category;
   final bool isArabic;
   final VoidCallback onTap;
 
@@ -50,7 +52,7 @@ class HomeRecommendedCard extends StatelessWidget {
     super.key,
   });
 
-  final MockHomeService service;
+  final CustomerService service;
   final bool isArabic;
   final VoidCallback onTap;
 
@@ -95,11 +97,12 @@ class HomeRecentRequestCard extends StatelessWidget {
     super.key,
   });
 
-  final MockRecentRequest request;
+  final CustomerRequest request;
   final bool isArabic;
 
   @override
   Widget build(BuildContext context) {
+    final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     return OtlobCard(
       child: Row(
         children: <Widget>[
@@ -113,7 +116,7 @@ class HomeRecentRequestCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  request.title(isArabic: isArabic),
+                  request.serviceTitle(isArabic: isArabic),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: OtlobSpacing.xs),
@@ -126,10 +129,17 @@ class HomeRecentRequestCard extends StatelessWidget {
             ),
           ),
           OtlobBadge(
-            label: request.status(isArabic: isArabic),
-            tone: switch (request.tone) {
-              MockHomeRequestTone.pending => OtlobBadgeTone.warning,
-              MockHomeRequestTone.inProgress => OtlobBadgeTone.info,
+            label: switch (request.status) {
+              CustomerRequestStatus.pending => localizations.pending,
+              CustomerRequestStatus.inProgress => localizations.inProgress,
+              CustomerRequestStatus.completed => localizations.completed,
+              CustomerRequestStatus.cancelled => localizations.cancelled,
+            },
+            tone: switch (request.status) {
+              CustomerRequestStatus.pending => OtlobBadgeTone.warning,
+              CustomerRequestStatus.inProgress => OtlobBadgeTone.info,
+              CustomerRequestStatus.completed => OtlobBadgeTone.success,
+              CustomerRequestStatus.cancelled => OtlobBadgeTone.error,
             },
           ),
         ],
@@ -138,11 +148,13 @@ class HomeRecentRequestCard extends StatelessWidget {
   }
 }
 
-IconData _iconFor(MockHomeVisual visual) {
+IconData _iconFor(ServiceVisual visual) {
   return switch (visual) {
-    MockHomeVisual.cleaning => Icons.cleaning_services_outlined,
-    MockHomeVisual.airConditioning => Icons.ac_unit,
-    MockHomeVisual.plumbing => Icons.plumbing,
-    MockHomeVisual.electrical => Icons.electrical_services_outlined,
+    ServiceVisual.cleaning => Icons.cleaning_services_outlined,
+    ServiceVisual.airConditioning => Icons.ac_unit,
+    ServiceVisual.plumbing => Icons.plumbing,
+    ServiceVisual.electrical => Icons.electrical_services_outlined,
+    ServiceVisual.maintenance => Icons.handyman_outlined,
+    ServiceVisual.moving => Icons.local_shipping_outlined,
   };
 }

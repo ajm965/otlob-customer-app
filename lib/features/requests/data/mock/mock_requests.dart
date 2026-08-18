@@ -1,48 +1,14 @@
-enum MockRequestStatus { pending, inProgress, completed, cancelled }
+import '../../../../core/errors/integration_failure.dart';
+import '../../domain/models/customer_request.dart';
+import '../../domain/repositories/customer_request_repository.dart';
+import 'mock_request_creation.dart';
 
-class MockRequest {
-  const MockRequest({
-    required this.id,
-    required this.serviceTitleAr,
-    required this.serviceTitleEn,
-    required this.reference,
-    required this.descriptionAr,
-    required this.descriptionEn,
-    required this.locationAr,
-    required this.locationEn,
-    required this.dateLabelAr,
-    required this.dateLabelEn,
-    required this.status,
-  });
-
-  final String id;
-  final String serviceTitleAr;
-  final String serviceTitleEn;
-  final String reference;
-  final String descriptionAr;
-  final String descriptionEn;
-  final String locationAr;
-  final String locationEn;
-  final String dateLabelAr;
-  final String dateLabelEn;
-  final MockRequestStatus status;
-
-  String serviceTitle({required bool isArabic}) =>
-      isArabic ? serviceTitleAr : serviceTitleEn;
-
-  String dateLabel({required bool isArabic}) =>
-      isArabic ? dateLabelAr : dateLabelEn;
-
-  String description({required bool isArabic}) =>
-      isArabic ? descriptionAr : descriptionEn;
-
-  String location({required bool isArabic}) =>
-      isArabic ? locationAr : locationEn;
-}
+typedef MockRequest = CustomerRequest;
+typedef MockRequestStatus = CustomerRequestStatus;
 
 abstract final class MockRequests {
-  static const List<MockRequest> all = <MockRequest>[
-    MockRequest(
+  static const List<CustomerRequest> all = <CustomerRequest>[
+    CustomerRequest(
       id: 'request-pending',
       serviceTitleAr: 'تنظيف المنزل',
       serviceTitleEn: 'Home cleaning',
@@ -53,9 +19,9 @@ abstract final class MockRequests {
       locationEn: 'Mock home, Riyadh',
       dateLabelAr: 'اليوم',
       dateLabelEn: 'Today',
-      status: MockRequestStatus.pending,
+      status: CustomerRequestStatus.pending,
     ),
-    MockRequest(
+    CustomerRequest(
       id: 'request-progress',
       serviceTitleAr: 'صيانة المكيف',
       serviceTitleEn: 'AC maintenance',
@@ -66,9 +32,9 @@ abstract final class MockRequests {
       locationEn: 'Mock workplace, Riyadh',
       dateLabelAr: 'أمس',
       dateLabelEn: 'Yesterday',
-      status: MockRequestStatus.inProgress,
+      status: CustomerRequestStatus.inProgress,
     ),
-    MockRequest(
+    CustomerRequest(
       id: 'request-completed',
       serviceTitleAr: 'فحص السباكة',
       serviceTitleEn: 'Plumbing check',
@@ -79,9 +45,9 @@ abstract final class MockRequests {
       locationEn: 'Mock home, Riyadh',
       dateLabelAr: 'الأسبوع الماضي',
       dateLabelEn: 'Last week',
-      status: MockRequestStatus.completed,
+      status: CustomerRequestStatus.completed,
     ),
-    MockRequest(
+    CustomerRequest(
       id: 'request-cancelled',
       serviceTitleAr: 'فحص الكهرباء',
       serviceTitleEn: 'Electrical check',
@@ -92,16 +58,50 @@ abstract final class MockRequests {
       locationEn: 'Mock workplace, Riyadh',
       dateLabelAr: 'منذ أسبوعين',
       dateLabelEn: 'Two weeks ago',
-      status: MockRequestStatus.cancelled,
+      status: CustomerRequestStatus.cancelled,
     ),
   ];
 
-  static MockRequest? byId(String id) {
-    for (final MockRequest request in all) {
+  static CustomerRequest? byId(String id) {
+    for (final CustomerRequest request in all) {
       if (request.id == id) {
         return request;
       }
     }
     return null;
   }
+}
+
+class MockCustomerRequestRepository implements CustomerRequestRepository {
+  const MockCustomerRequestRepository();
+
+  @override
+  Future<IntegrationResult<List<CustomerRequest>>> listRequests() async =>
+      const IntegrationSuccess<List<CustomerRequest>>(MockRequests.all);
+
+  @override
+  Future<IntegrationResult<CustomerRequest?>> getRequest(
+    String requestId,
+  ) async => IntegrationSuccess<CustomerRequest?>(MockRequests.byId(requestId));
+
+  @override
+  Future<IntegrationResult<RequestSubmission>> createRequest(
+    RequestDraft draft,
+  ) async {
+    if (!draft.canSubmit) {
+      return const IntegrationError<RequestSubmission>(
+        IntegrationFailure(IntegrationFailureKind.validation),
+      );
+    }
+    return const IntegrationSuccess<RequestSubmission>(
+      MockRequestCreationData.submission,
+    );
+  }
+
+  @override
+  Future<IntegrationResult<List<RequestAddress>>>
+  listSelectableAddresses() async =>
+      const IntegrationSuccess<List<RequestAddress>>(
+        MockRequestCreationData.addresses,
+      );
 }

@@ -6,14 +6,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../data/mock/mock_authentication.dart';
+import '../domain/models/authentication_state.dart';
 import '../widgets/authentication_scaffold.dart';
 import 'state/mock_authentication_controller.dart';
 
 class AuthenticationPhonePage extends ConsumerStatefulWidget {
   const AuthenticationPhonePage({required this.flow, super.key});
 
-  final MockAuthenticationFlow flow;
+  final AuthenticationFlow flow;
 
   @override
   ConsumerState<AuthenticationPhonePage> createState() =>
@@ -25,8 +25,7 @@ class _AuthenticationPhonePageState
   late final TextEditingController _phoneController;
   String? _errorText;
 
-  bool get _isRegistration =>
-      widget.flow == MockAuthenticationFlow.registration;
+  bool get _isRegistration => widget.flow == AuthenticationFlow.registration;
 
   @override
   void initState() {
@@ -49,17 +48,23 @@ class _AuthenticationPhonePageState
       setState(() => _errorText = localizations.phoneRequired);
       return;
     }
-    if (!MockAuthenticationController.isValidKsaPhone(phone)) {
+    if (!ref.read(mockAuthenticationProvider.notifier).isValidKsaPhone(phone)) {
       setState(() => _errorText = localizations.phoneInvalid);
       return;
     }
 
-    ref.read(mockAuthenticationProvider.notifier).begin(widget.flow, phone);
-    context.push(
-      _isRegistration
-          ? AppRoute.registrationVerification.path
-          : AppRoute.signInVerification.path,
-    );
+    ref
+        .read(mockAuthenticationProvider.notifier)
+        .begin(widget.flow, phone)
+        .then((bool started) {
+          if (started && mounted) {
+            context.push(
+              _isRegistration
+                  ? AppRoute.registrationVerification.path
+                  : AppRoute.signInVerification.path,
+            );
+          }
+        });
   }
 
   @override
