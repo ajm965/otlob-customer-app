@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "846185087169",
+    "project_id": "otlob-platform-dev",
+    "storage_bucket": "otlob-platform-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846185087169:android:1eef97bee63bade9669440",
+        "android_client_info": {
+          "package_name": "com.example.otlob_customer_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNBQi2A0WjMTAwWBKbp7JHvoW4lNu2h-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
@@ -7,6 +8,7 @@ import '../core/errors/bootstrap_error_handler.dart';
 import '../core/network/platform_api_client.dart';
 import '../core/router/app_router.dart';
 import '../features/services/data/http/http_service_catalog_repository.dart';
+import '../firebase_options.dart';
 import 'otlob_app.dart';
 
 abstract final class AppBootstrap {
@@ -14,6 +16,7 @@ abstract final class AppBootstrap {
     EnvironmentConfig? environment,
     BootstrapErrorHandler? errorHandler,
   }) async {
+    WidgetsFlutterBinding.ensureInitialized();
     final BootstrapErrorHandler handler =
         errorHandler ?? BootstrapErrorHandler();
     handler.installFrameworkBoundary();
@@ -29,6 +32,10 @@ abstract final class AppBootstrap {
             baseUrl: config.apiBaseUrl,
           ),
         ),
+      );
+
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
       );
 
       runApp(OtlobApp(config: config, router: router));
