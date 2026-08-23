@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otlob_customer_app/features/addresses/data/mock/mock_addresses.dart';
+import 'package:otlob_customer_app/features/addresses/domain/models/customer_address.dart';
 import 'package:otlob_customer_app/features/requests/data/http/request_json.dart';
 import 'package:otlob_customer_app/features/requests/domain/models/customer_request.dart';
 
@@ -55,7 +56,7 @@ void main() {
     expect(body.containsKey('location'), isFalse);
   });
 
-  test('buildCreateRequestBody includes location when address is selected', () {
+  test('buildCreateRequestBody sends addressId for saved address', () {
     final Map<String, Object?> body = buildCreateRequestBody(
       RequestDraft(
         serviceId: 'plumbing',
@@ -66,6 +67,42 @@ void main() {
 
     expect(body['serviceId'], 'plumbing');
     expect(body['description'], 'اختبار طلب سباكة');
+    expect(body['addressId'], MockAddresses.all.first.id);
+    expect(body.containsKey('location'), isFalse);
+  });
+
+  test('buildCreateRequestBody never sends addressId and location together', () {
+    final Map<String, Object?> body = buildCreateRequestBody(
+      RequestDraft(
+        serviceId: 'plumbing',
+        description: 'اختبار طلب سباكة',
+        address: MockAddresses.all.first,
+      ),
+    );
+
+    final bool hasAddressId = body.containsKey('addressId');
+    final bool hasLocation = body.containsKey('location');
+    expect(hasAddressId || hasLocation, isTrue);
+    expect(hasAddressId && hasLocation, isFalse);
+  });
+
+  test('buildCreateRequestBody falls back to location without address id', () {
+    final Map<String, Object?> body = buildCreateRequestBody(
+      RequestDraft(
+        serviceId: 'plumbing',
+        description: 'اختبار طلب سباكة',
+        address: const CustomerAddress(
+          id: '',
+          label: 'Coords only',
+          line1: 'Sample address',
+          city: 'Riyadh',
+          countryCode: 'SA',
+          latitude: 24.7,
+          longitude: 46.7,
+        ),
+      ),
+    );
+
     expect(body.containsKey('addressId'), isFalse);
     expect(
       body['location'],

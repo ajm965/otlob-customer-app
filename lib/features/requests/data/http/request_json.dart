@@ -69,7 +69,9 @@ Map<String, Object?> buildCreateRequestBody(RequestDraft draft) {
         : draft.description.trim(),
   };
   final CustomerAddress? address = draft.address;
-  if (address != null &&
+  if (address != null && address.id.trim().isNotEmpty) {
+    body['addressId'] = address.id.trim();
+  } else if (address != null &&
       address.latitude != null &&
       address.longitude != null) {
     body['location'] = <String, Object?>{

@@ -77,17 +77,14 @@ void main() {
     );
   });
 
-  test('createRequest includes location when draft has address', () async {
+  test('createRequest includes addressId when draft has address', () async {
     final HttpCustomerRequestRepository repository = _repository((
       http.Request request,
     ) async {
       final Map<String, Object?> body =
           jsonDecode(request.body) as Map<String, Object?>;
-      expect(body.containsKey('addressId'), isFalse);
-      expect(
-        body['location'],
-        <String, Object?>{'latitude': 24.7, 'longitude': 46.7},
-      );
+      expect(body['addressId'], MockAddresses.all.first.id);
+      expect(body.containsKey('location'), isFalse);
       return http.Response(
         jsonEncode(<String, Object?>{
           'data': <String, Object?>{
@@ -97,7 +94,7 @@ void main() {
             'customerId': 'offline-customer',
             'serviceId': 'plumbing',
             'status': 'draft',
-            'description': 'With location',
+            'description': 'With addressId',
             'location': <String, Object?>{'latitude': 24.7, 'longitude': 46.7},
             'preferredTimeStart': null,
             'preferredTimeEnd': null,
@@ -114,7 +111,7 @@ void main() {
         .createRequest(
           RequestDraft(
             serviceId: 'plumbing',
-            description: 'With location',
+            description: 'With addressId',
             address: MockAddresses.all.first,
           ),
         );
