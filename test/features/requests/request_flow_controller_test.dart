@@ -75,7 +75,7 @@ void main() {
       );
     });
 
-    test('createRequest body includes location and excludes addressId', () {
+    test('createRequest body includes addressId and excludes location', () {
       final CustomerAddress address = MockAddresses.all.first;
       container.read(requestFlowProvider.notifier).selectAddress(address);
       container
@@ -88,14 +88,8 @@ void main() {
 
       expect(body['serviceId'], 'home-cleaning');
       expect(body['description'], 'Kitchen leak');
-      expect(body.containsKey('addressId'), isFalse);
-      expect(
-        body['location'],
-        <String, Object?>{
-          'latitude': address.latitude,
-          'longitude': address.longitude,
-        },
-      );
+      expect(body['addressId'], address.id);
+      expect(body.containsKey('location'), isFalse);
     });
   });
 }

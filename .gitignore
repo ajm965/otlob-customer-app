@@ -28,3 +28,4 @@ macos/.symlinks/
 .env
 .env.*
 !.env.example
+_deps/
