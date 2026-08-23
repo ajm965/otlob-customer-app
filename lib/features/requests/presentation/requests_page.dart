@@ -5,19 +5,26 @@ import '../../../core/errors/integration_failure.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
+import '../../services/domain/repositories/service_catalog_repository.dart';
+import '../data/request_catalog_enricher.dart';
 import '../domain/models/customer_request.dart';
 import '../domain/repositories/customer_request_repository.dart';
 import '../widgets/request_card.dart';
 
 class RequestsPage extends StatefulWidget {
-  const RequestsPage({this.items, this.repository, super.key})
-    : assert(
+  const RequestsPage({
+    this.items,
+    this.repository,
+    this.serviceCatalogRepository,
+    super.key,
+  }) : assert(
         items != null || repository != null,
         'Provide items for a presentation test or a request repository.',
       );
 
   final List<CustomerRequest>? items;
   final CustomerRequestRepository? repository;
+  final ServiceCatalogRepository? serviceCatalogRepository;
 
   @override
   State<RequestsPage> createState() => _RequestsPageState();
@@ -27,10 +34,31 @@ class _RequestsPageState extends State<RequestsPage> {
   _RequestFilter _filter = _RequestFilter.all;
   late final Future<IntegrationResult<List<CustomerRequest>>> _requests =
       widget.items == null
-      ? widget.repository!.listRequests()
+      ? _loadRequests()
       : Future<IntegrationResult<List<CustomerRequest>>>.value(
           IntegrationSuccess<List<CustomerRequest>>(widget.items!),
         );
+
+  Future<IntegrationResult<List<CustomerRequest>>> _loadRequests() async {
+    final IntegrationResult<List<CustomerRequest>> result = await widget
+        .repository!
+        .listRequests();
+    final ServiceCatalogRepository? catalogRepository =
+        widget.serviceCatalogRepository;
+    if (catalogRepository == null) {
+      return result;
+    }
+    return switch (result) {
+      IntegrationSuccess<List<CustomerRequest>>(:final value) =>
+        IntegrationSuccess<List<CustomerRequest>>(
+          await RequestCatalogEnricher(
+            catalogRepository: catalogRepository,
+          ).enrichRequests(value),
+        ),
+      IntegrationError<List<CustomerRequest>>(:final IntegrationFailure failure) =>
+        IntegrationError<List<CustomerRequest>>(failure),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {

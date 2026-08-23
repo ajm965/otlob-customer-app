@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/theme/otlob_design_system.dart';
-import '../domain/models/customer_request.dart';
+import '../../addresses/domain/models/customer_address.dart';
 
 class RequestStepScaffold extends StatelessWidget {
   const RequestStepScaffold({
@@ -66,7 +66,7 @@ class MockAddressCard extends StatelessWidget {
     super.key,
   });
 
-  final RequestAddress address;
+  final CustomerAddress address;
   final bool isArabic;
   final bool isSelected;
   final VoidCallback onTap;
@@ -75,7 +75,7 @@ class MockAddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return OtlobCard(
       onTap: onTap,
-      semanticLabel: address.label(isArabic: isArabic),
+      semanticLabel: address.labelText(isArabic: isArabic),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -93,16 +93,16 @@ class MockAddressCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  address.label(isArabic: isArabic),
+                  address.labelText(isArabic: isArabic),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: OtlobSpacing.xs),
                 Text(
-                  address.line1(isArabic: isArabic),
+                  address.line1Text(isArabic: isArabic),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
-                  '${address.city(isArabic: isArabic)}, ${address.countryCode}',
+                  '${address.cityText(isArabic: isArabic)}, ${address.countryCode}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: context.otlobColors.mutedText,
                   ),

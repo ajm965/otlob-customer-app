@@ -1,7 +1,6 @@
 import '../../../../core/errors/integration_failure.dart';
 import '../../domain/models/customer_request.dart';
 import '../../domain/repositories/customer_request_repository.dart';
-import 'mock_request_creation.dart';
 
 typedef MockRequest = CustomerRequest;
 typedef MockRequestStatus = CustomerRequestStatus;
@@ -10,6 +9,7 @@ abstract final class MockRequests {
   static const List<CustomerRequest> all = <CustomerRequest>[
     CustomerRequest(
       id: 'request-pending',
+      serviceId: 'home-cleaning',
       serviceTitleAr: 'تنظيف المنزل',
       serviceTitleEn: 'Home cleaning',
       reference: 'REQ-1042',
@@ -23,6 +23,7 @@ abstract final class MockRequests {
     ),
     CustomerRequest(
       id: 'request-progress',
+      serviceId: 'ac-maintenance',
       serviceTitleAr: 'صيانة المكيف',
       serviceTitleEn: 'AC maintenance',
       reference: 'REQ-1038',
@@ -36,6 +37,7 @@ abstract final class MockRequests {
     ),
     CustomerRequest(
       id: 'request-completed',
+      serviceId: 'plumbing-check',
       serviceTitleAr: 'فحص السباكة',
       serviceTitleEn: 'Plumbing check',
       reference: 'REQ-1024',
@@ -49,6 +51,7 @@ abstract final class MockRequests {
     ),
     CustomerRequest(
       id: 'request-cancelled',
+      serviceId: 'electrical-check',
       serviceTitleAr: 'فحص الكهرباء',
       serviceTitleEn: 'Electrical check',
       reference: 'REQ-1018',
@@ -94,14 +97,7 @@ class MockCustomerRequestRepository implements CustomerRequestRepository {
       );
     }
     return const IntegrationSuccess<RequestSubmission>(
-      MockRequestCreationData.submission,
+      RequestSubmission(reference: 'MOCK-REQ-0001'),
     );
   }
-
-  @override
-  Future<IntegrationResult<List<RequestAddress>>>
-  listSelectableAddresses() async =>
-      const IntegrationSuccess<List<RequestAddress>>(
-        MockRequestCreationData.addresses,
-      );
 }

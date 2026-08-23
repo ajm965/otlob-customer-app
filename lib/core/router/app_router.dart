@@ -15,6 +15,8 @@ import '../../features/home/presentation/home_page.dart';
 import '../../features/profile/data/mock/mock_profile.dart';
 import '../../features/profile/domain/repositories/customer_profile_repository.dart';
 import '../../features/profile/presentation/profile_page.dart';
+import '../../features/addresses/data/mock/mock_addresses.dart';
+import '../../features/addresses/domain/repositories/customer_address_repository.dart';
 import '../../features/requests/data/mock/mock_requests.dart';
 import '../../features/requests/domain/repositories/customer_request_repository.dart';
 import '../../features/requests/presentation/request_detail_page.dart';
@@ -31,10 +33,25 @@ import '../../features/services/presentation/services_page.dart';
 import 'app_route.dart';
 
 class AppRouter {
+  static final Map<String, GlobalKey<State<RequestFlowScope>>> _requestFlowScopeKeys =
+      <String, GlobalKey<State<RequestFlowScope>>>{};
+
+  static GlobalKey<State<RequestFlowScope>> requestFlowScopeKey(String serviceId) {
+    return _requestFlowScopeKeys.putIfAbsent(
+      serviceId,
+      GlobalKey<State<RequestFlowScope>>.new,
+    );
+  }
+
+  static void clearRequestFlowScope(String serviceId) {
+    _requestFlowScopeKeys.remove(serviceId);
+  }
+
   AppRouter({
     AuthenticationRepository? authenticationRepository,
     ServiceCatalogRepository? serviceRepository,
     CustomerRequestRepository? requestRepository,
+    CustomerAddressRepository? addressRepository,
     CustomerProfileRepository? profileRepository,
   }) : router = _createRouter(
          authenticationRepository:
@@ -43,6 +60,8 @@ class AppRouter {
              serviceRepository ?? const MockServiceCatalogRepository(),
          requestRepository:
              requestRepository ?? const MockCustomerRequestRepository(),
+         addressRepository:
+             addressRepository ?? const MockCustomerAddressRepository(),
          profileRepository:
              profileRepository ?? const MockCustomerProfileRepository(),
        );
@@ -53,6 +72,7 @@ class AppRouter {
     required AuthenticationRepository authenticationRepository,
     required ServiceCatalogRepository serviceRepository,
     required CustomerRequestRepository requestRepository,
+    required CustomerAddressRepository addressRepository,
     required CustomerProfileRepository profileRepository,
   }) {
     return GoRouter(
@@ -99,7 +119,10 @@ class AppRouter {
                   path: AppRoute.requests.path,
                   name: AppRoute.requests.name,
                   builder: (BuildContext context, GoRouterState state) =>
-                      RequestsPage(repository: requestRepository),
+                      RequestsPage(
+                        repository: requestRepository,
+                        serviceCatalogRepository: serviceRepository,
+                      ),
                   routes: <RouteBase>[
                     GoRoute(
                       path: ':requestId',
@@ -108,6 +131,7 @@ class AppRouter {
                         return RequestDetailPage(
                           requestId: state.pathParameters['requestId']!,
                           repository: requestRepository,
+                          serviceCatalogRepository: serviceRepository,
                         );
                       },
                     ),
@@ -189,9 +213,12 @@ class AppRouter {
         ),
         ShellRoute(
           builder: (BuildContext context, GoRouterState state, Widget child) {
+            final String serviceId = state.pathParameters['serviceId']!;
             return RequestFlowScope(
-              serviceId: state.pathParameters['serviceId']!,
+              key: AppRouter.requestFlowScopeKey(serviceId),
+              serviceId: serviceId,
               repository: requestRepository,
+              addressRepository: addressRepository,
               serviceRepository: serviceRepository,
               child: child,
             );

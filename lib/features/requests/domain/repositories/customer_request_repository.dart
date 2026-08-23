@@ -9,6 +9,4 @@ abstract interface class CustomerRequestRepository {
   Future<IntegrationResult<RequestSubmission>> createRequest(
     RequestDraft draft,
   );
-
-  Future<IntegrationResult<List<RequestAddress>>> listSelectableAddresses();
 }

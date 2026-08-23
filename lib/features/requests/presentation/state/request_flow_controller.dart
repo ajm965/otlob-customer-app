@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/integration_failure.dart';
+import '../../../addresses/domain/models/customer_address.dart';
+import '../../../addresses/domain/repositories/customer_address_repository.dart';
 import '../../../services/domain/repositories/service_catalog_repository.dart';
 import '../../domain/models/customer_request.dart';
 import '../../domain/repositories/customer_request_repository.dart';
@@ -13,6 +16,12 @@ final Provider<CustomerRequestRepository> customerRequestRepositoryProvider =
     Provider<CustomerRequestRepository>(
       (Ref ref) =>
           throw StateError('Customer request repository was not provided.'),
+    );
+
+final Provider<CustomerAddressRepository> customerAddressRepositoryProvider =
+    Provider<CustomerAddressRepository>(
+      (Ref ref) =>
+          throw StateError('Customer address repository was not provided.'),
     );
 
 final Provider<ServiceCatalogRepository> serviceCatalogRepositoryProvider =
@@ -29,7 +38,7 @@ requestFlowProvider = NotifierProvider<RequestFlowController, RequestDraft>(
 class RequestFlowController extends Notifier<RequestDraft> {
   @override
   RequestDraft build() {
-    return RequestDraft(serviceId: ref.watch(requestFlowServiceIdProvider));
+    return RequestDraft(serviceId: ref.read(requestFlowServiceIdProvider));
   }
 
   void updateDescription(String description) {
@@ -41,16 +50,32 @@ class RequestFlowController extends Notifier<RequestDraft> {
     );
   }
 
-  void selectAddress(RequestAddress address) {
+  void selectAddress(CustomerAddress address) {
     state = RequestDraft(
       serviceId: state.serviceId,
       description: state.description,
       address: address,
       submission: state.submission,
     );
+    if (kDebugMode) {
+      debugPrint(
+        '[RequestFlow] selectAddress '
+        'controller=${identityHashCode(this)} '
+        'addressId=${address.id} '
+        'canSubmit=${state.canSubmit}',
+      );
+    }
   }
 
-  Future<bool> submitMock() async {
+  Future<bool> submit() async {
+    if (kDebugMode) {
+      debugPrint(
+        '[RequestFlow] submit '
+        'controller=${identityHashCode(this)} '
+        'addressId=${state.address?.id ?? 'null'} '
+        'canSubmit=${state.canSubmit}',
+      );
+    }
     if (!state.canSubmit) {
       return false;
     }

@@ -5,6 +5,8 @@ import '../../../core/errors/integration_failure.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
+import '../../services/domain/repositories/service_catalog_repository.dart';
+import '../data/request_catalog_enricher.dart';
 import '../domain/models/customer_request.dart';
 import '../domain/repositories/customer_request_repository.dart';
 import '../widgets/request_card.dart';
@@ -14,20 +16,40 @@ class RequestDetailPage extends StatefulWidget {
   const RequestDetailPage({
     required this.requestId,
     required this.repository,
+    this.serviceCatalogRepository,
     super.key,
   });
 
   final String requestId;
   final CustomerRequestRepository repository;
+  final ServiceCatalogRepository? serviceCatalogRepository;
 
   @override
   State<RequestDetailPage> createState() => _RequestDetailPageState();
 }
 
 class _RequestDetailPageState extends State<RequestDetailPage> {
-  late final Future<IntegrationResult<CustomerRequest?>> _request = widget
-      .repository
-      .getRequest(widget.requestId);
+  late final Future<IntegrationResult<CustomerRequest?>> _request = _loadRequest();
+
+  Future<IntegrationResult<CustomerRequest?>> _loadRequest() async {
+    final IntegrationResult<CustomerRequest?> result = await widget.repository
+        .getRequest(widget.requestId);
+    final ServiceCatalogRepository? catalogRepository =
+        widget.serviceCatalogRepository;
+    if (catalogRepository == null) {
+      return result;
+    }
+    return switch (result) {
+      IntegrationSuccess<CustomerRequest?>(:final value) =>
+        IntegrationSuccess<CustomerRequest?>(
+          await RequestCatalogEnricher(
+            catalogRepository: catalogRepository,
+          ).enrichRequest(value),
+        ),
+      IntegrationError<CustomerRequest?>(:final IntegrationFailure failure) =>
+        IntegrationError<CustomerRequest?>(failure),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {

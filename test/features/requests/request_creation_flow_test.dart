@@ -52,7 +52,7 @@ void main() {
     expect(find.text('The living room needs cleaning.'), findsOneWidget);
     expect(find.textContaining('Sample address'), findsOneWidget);
     expect(
-      find.text('This request will not be sent to any backend'),
+      find.text('Your request will be sent to the Otlob platform'),
       findsOneWidget,
     );
 
@@ -61,11 +61,11 @@ void main() {
       const Offset(0, -200),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Submit mock request'));
+    await tester.tap(find.text('Submit request'));
     await tester.pumpAndSettle();
     expect(find.byType(RequestSuccessPage), findsOneWidget);
     expect(find.text('MOCK-REQ-0001'), findsOneWidget);
-    expect(find.text('Mock submission complete'), findsWidgets);
+    expect(find.text('Request submitted'), findsWidgets);
 
     await tester.ensureVisible(find.text('Go to Requests'));
     await tester.tap(find.text('Go to Requests'));
@@ -150,7 +150,7 @@ void main() {
       const Offset(0, -500),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Submit mock request'), findsOneWidget);
+    expect(find.text('Submit request'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

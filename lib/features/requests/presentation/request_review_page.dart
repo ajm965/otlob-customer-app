@@ -7,9 +7,11 @@ import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
 import '../../services/domain/models/customer_service.dart';
+import '../../addresses/domain/models/customer_address.dart';
 import '../domain/models/customer_request.dart';
 import '../widgets/request_flow_widgets.dart';
 import '../widgets/request_information_card.dart';
+import 'request_flow_debug.dart';
 import 'state/request_flow_controller.dart';
 
 class RequestReviewPage extends ConsumerWidget {
@@ -19,7 +21,8 @@ class RequestReviewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     final RequestDraft draft = ref.watch(requestFlowProvider);
-    final RequestAddress? address = draft.address;
+    final CustomerAddress? address = draft.address;
+    RequestFlowDebug.logDraft('buildReviewPage', ref);
 
     return FutureBuilder<IntegrationResult<CustomerService?>>(
       future: ref
@@ -65,9 +68,9 @@ class RequestReviewPage extends ConsumerWidget {
                   title: localizations.serviceLocation,
                   value: address == null
                       ? localizations.locationRequired
-                      : '${address.label(isArabic: localizations.isArabic)}\n'
-                            '${address.line1(isArabic: localizations.isArabic)}, '
-                            '${address.city(isArabic: localizations.isArabic)}',
+                      : '${address.labelText(isArabic: localizations.isArabic)}\n'
+                            '${address.line1Text(isArabic: localizations.isArabic)}, '
+                            '${address.cityText(isArabic: localizations.isArabic)}',
                   icon: Icons.location_on_outlined,
                 ),
                 const SizedBox(height: OtlobSpacing.lg),
@@ -79,7 +82,7 @@ class RequestReviewPage extends ConsumerWidget {
                       const SizedBox(width: OtlobSpacing.md),
                       Expanded(
                         child: Text(
-                          localizations.mockSubmissionNotice,
+                          localizations.submissionNotice,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -88,8 +91,8 @@ class RequestReviewPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: OtlobSpacing.xl),
                 OtlobButton(
-                  key: const Key('submit-mock-request'),
-                  label: localizations.submitMockRequest,
+                  key: const Key('submit-request'),
+                  label: localizations.submitRequest,
                   onPressed: () => _submit(context, ref, draft.serviceId),
                 ),
               ],
@@ -103,9 +106,19 @@ class RequestReviewPage extends ConsumerWidget {
     WidgetRef ref,
     String serviceId,
   ) async {
+    RequestFlowDebug.logDraft('submitPressed', ref);
+    final RequestDraft draft = ref.read(requestFlowProvider);
+    if (!draft.canSubmit) {
+      final OtlobLocalizations localizations = OtlobLocalizations.of(context);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(localizations.locationRequired)));
+      return;
+    }
+
     final bool submitted = await ref
         .read(requestFlowProvider.notifier)
-        .submitMock();
+        .submit();
     if (!context.mounted) {
       return;
     }
@@ -118,6 +131,6 @@ class RequestReviewPage extends ConsumerWidget {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(localizations.locationRequired)));
+      ..showSnackBar(SnackBar(content: Text(localizations.submissionFailed)));
   }
 }

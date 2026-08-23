@@ -1,8 +1,11 @@
+import '../../../addresses/domain/models/customer_address.dart';
+
 enum CustomerRequestStatus { pending, inProgress, completed, cancelled }
 
 class CustomerRequest {
   const CustomerRequest({
     required this.id,
+    required this.serviceId,
     required this.serviceTitleAr,
     required this.serviceTitleEn,
     required this.reference,
@@ -16,6 +19,7 @@ class CustomerRequest {
   });
 
   final String id;
+  final String serviceId;
   final String serviceTitleAr;
   final String serviceTitleEn;
   final String reference;
@@ -38,36 +42,26 @@ class CustomerRequest {
 
   String location({required bool isArabic}) =>
       isArabic ? locationAr : locationEn;
-}
 
-class RequestAddress {
-  const RequestAddress({
-    required this.id,
-    required this.labelAr,
-    required this.labelEn,
-    required this.line1Ar,
-    required this.line1En,
-    required this.cityAr,
-    required this.cityEn,
-    required this.countryCode,
-    required this.latitude,
-    required this.longitude,
-  });
-
-  final String id;
-  final String labelAr;
-  final String labelEn;
-  final String line1Ar;
-  final String line1En;
-  final String cityAr;
-  final String cityEn;
-  final String countryCode;
-  final double latitude;
-  final double longitude;
-
-  String label({required bool isArabic}) => isArabic ? labelAr : labelEn;
-  String line1({required bool isArabic}) => isArabic ? line1Ar : line1En;
-  String city({required bool isArabic}) => isArabic ? cityAr : cityEn;
+  CustomerRequest withCatalogTitles({
+    required String titleAr,
+    required String titleEn,
+  }) {
+    return CustomerRequest(
+      id: id,
+      serviceId: serviceId,
+      serviceTitleAr: titleAr,
+      serviceTitleEn: titleEn,
+      reference: reference,
+      descriptionAr: descriptionAr,
+      descriptionEn: descriptionEn,
+      locationAr: locationAr,
+      locationEn: locationEn,
+      dateLabelAr: dateLabelAr,
+      dateLabelEn: dateLabelEn,
+      status: status,
+    );
+  }
 }
 
 class RequestDraft {
@@ -80,7 +74,7 @@ class RequestDraft {
 
   final String serviceId;
   final String description;
-  final RequestAddress? address;
+  final CustomerAddress? address;
   final RequestSubmission? submission;
 
   bool get canSubmit => serviceId.isNotEmpty && address != null;

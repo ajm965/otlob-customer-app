@@ -5,6 +5,7 @@ import '../../../core/errors/integration_failure.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
+import '../../requests/data/request_catalog_enricher.dart';
 import '../../requests/domain/models/customer_request.dart';
 import '../../requests/domain/repositories/customer_request_repository.dart';
 import '../../services/domain/models/customer_service.dart';
@@ -37,14 +38,17 @@ class _HomePageState extends State<HomePage> {
     final IntegrationResult<List<CustomerRequest>> requestsResult = await widget
         .requestRepository
         .listRequests();
+    final List<CustomerService> services = _valueOrEmpty(servicesResult);
+    final Map<String, CustomerService> servicesById = <String, CustomerService>{
+      for (final CustomerService service in services) service.id: service,
+    };
     return _HomeContent(
       categories: _valueOrEmpty(categoriesResult),
-      recommended: _valueOrEmpty(
-        servicesResult,
-      ).take(2).toList(growable: false),
-      recentRequests: _valueOrEmpty(
-        requestsResult,
-      ).take(2).toList(growable: false),
+      recommended: services.take(2).toList(growable: false),
+      recentRequests: enrichRequestsWithServices(
+        _valueOrEmpty(requestsResult).take(2).toList(growable: false),
+        servicesById,
+      ),
     );
   }
 

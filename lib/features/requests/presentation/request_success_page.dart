@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/otlob_design_system.dart';
 import '../domain/models/customer_request.dart';
 import 'state/request_flow_controller.dart';
@@ -65,7 +66,7 @@ class RequestSuccessPage extends ConsumerWidget {
                     child: Column(
                       children: <Widget>[
                         Text(
-                          localizations.mockReference,
+                          localizations.requestReference,
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
                         const SizedBox(height: OtlobSpacing.xs),
@@ -82,7 +83,12 @@ class RequestSuccessPage extends ConsumerWidget {
                   const SizedBox(height: OtlobSpacing.xl),
                   OtlobButton(
                     label: localizations.goToRequests,
-                    onPressed: () => context.go(AppRoute.requests.path),
+                    onPressed: () {
+                      AppRouter.clearRequestFlowScope(
+                        ref.read(requestFlowServiceIdProvider),
+                      );
+                      context.go(AppRoute.requests.path);
+                    },
                   ),
                 ],
               ],

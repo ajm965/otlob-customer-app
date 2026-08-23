@@ -19,11 +19,62 @@ class PlatformApiClient {
   Future<IntegrationResult<Object?>> get(
     String path, {
     Map<String, String>? query,
+  }) {
+    return _send(
+      (Uri uri) => client.get(uri),
+      path,
+      query: query,
+    );
+  }
+
+  Future<IntegrationResult<Object?>> post(
+    String path, {
+    Map<String, Object?>? body,
+    Map<String, String>? query,
+  }) {
+    return _send(
+      (Uri uri) => client.post(
+        uri,
+        headers: const <String, String>{'content-type': 'application/json'},
+        body: body == null ? null : jsonEncode(body),
+      ),
+      path,
+      query: query,
+    );
+  }
+
+  Future<IntegrationResult<Object?>> patch(
+    String path, {
+    Map<String, Object?>? body,
+    Map<String, String>? query,
+  }) {
+    return _send(
+      (Uri uri) => client.patch(
+        uri,
+        headers: const <String, String>{'content-type': 'application/json'},
+        body: body == null ? null : jsonEncode(body),
+      ),
+      path,
+      query: query,
+    );
+  }
+
+  Future<IntegrationResult<Object?>> delete(
+    String path, {
+    Map<String, String>? query,
+  }) {
+    return _send((Uri uri) => client.delete(uri), path, query: query);
+  }
+
+  Future<IntegrationResult<Object?>> _send(
+    Future<http.Response> Function(Uri uri) send,
+    String path, {
+    Map<String, String>? query,
   }) async {
     final Uri uri = _resolve(path, query);
     final http.Response response;
     try {
-      response = await client.get(uri).timeout(timeout);
+      response = await send(uri).timeout(timeout);
     } on TimeoutException {
       return const IntegrationError<Object?>(
         IntegrationFailure(IntegrationFailureKind.network),

@@ -6,8 +6,10 @@ import '../../../core/errors/integration_failure.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
+import '../../addresses/domain/models/customer_address.dart';
 import '../domain/models/customer_request.dart';
 import '../widgets/request_flow_widgets.dart';
+import 'request_flow_debug.dart';
 import 'state/request_flow_controller.dart';
 
 class RequestLocationPage extends ConsumerStatefulWidget {
@@ -20,9 +22,13 @@ class RequestLocationPage extends ConsumerStatefulWidget {
 
 class _RequestLocationPageState extends ConsumerState<RequestLocationPage> {
   bool _showValidationError = false;
-  late final Future<IntegrationResult<List<RequestAddress>>> _addresses = ref
-      .read(customerRequestRepositoryProvider)
-      .listSelectableAddresses();
+  late final Future<IntegrationResult<List<CustomerAddress>>> _addresses;
+
+  @override
+  void initState() {
+    super.initState();
+    _addresses = ref.read(customerAddressRepositoryProvider).listAddresses();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,37 +39,37 @@ class _RequestLocationPageState extends ConsumerState<RequestLocationPage> {
       currentStep: 3,
       children: <Widget>[
         Text(
-          localizations.selectMockLocation,
+          localizations.selectSavedAddress,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: OtlobSpacing.sm),
         Text(
-          localizations.mockLocationNotice,
+          localizations.savedAddressNotice,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: context.otlobColors.mutedText,
           ),
         ),
         const SizedBox(height: OtlobSpacing.lg),
-        FutureBuilder<IntegrationResult<List<RequestAddress>>>(
+        FutureBuilder<IntegrationResult<List<CustomerAddress>>>(
           future: _addresses,
           builder:
               (
                 BuildContext context,
-                AsyncSnapshot<IntegrationResult<List<RequestAddress>>> snapshot,
+                AsyncSnapshot<IntegrationResult<List<CustomerAddress>>> snapshot,
               ) {
                 if (!snapshot.hasData) {
                   return Center(
                     child: OtlobLoading(semanticLabel: localizations.appName),
                   );
                 }
-                final List<RequestAddress> addresses = switch (snapshot.data) {
-                  IntegrationSuccess<List<RequestAddress>>(:final value) =>
+                final List<CustomerAddress> addresses = switch (snapshot.data) {
+                  IntegrationSuccess<List<CustomerAddress>>(:final value) =>
                     value,
-                  _ => const <RequestAddress>[],
+                  _ => const <CustomerAddress>[],
                 };
                 return Column(
                   children: <Widget>[
-                    for (final RequestAddress address in addresses) ...<Widget>[
+                    for (final CustomerAddress address in addresses) ...<Widget>[
                       MockAddressCard(
                         address: address,
                         isArabic: localizations.isArabic,
@@ -72,6 +78,11 @@ class _RequestLocationPageState extends ConsumerState<RequestLocationPage> {
                           ref
                               .read(requestFlowProvider.notifier)
                               .selectAddress(address);
+                          RequestFlowDebug.logDraft(
+                            'selectAddress',
+                            ref,
+                            selectedAddressId: address.id,
+                          );
                           setState(() => _showValidationError = false);
                         },
                       ),
@@ -103,6 +114,7 @@ class _RequestLocationPageState extends ConsumerState<RequestLocationPage> {
       setState(() => _showValidationError = true);
       return;
     }
+    RequestFlowDebug.logDraft('continueToReview', ref);
     context.push(AppRoute.requestReview.pathForService(draft.serviceId));
   }
 }

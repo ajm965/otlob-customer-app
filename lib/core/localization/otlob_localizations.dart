@@ -92,34 +92,38 @@ class OtlobLocalizations {
       ? 'اكتب وصفاً مختصراً للمشكلة'
       : 'Add a short description of the issue';
   String get serviceLocation => isArabic ? 'موقع الخدمة' : 'Service location';
-  String get selectMockLocation =>
-      isArabic ? 'اختر موقعاً تجريبياً' : 'Select a mock location';
-  String get mockLocationNotice => isArabic
-      ? 'هذه مواقع محلية تجريبية ولا تستخدم الخرائط أو GPS'
-      : 'These are local mock locations; no maps or GPS are used';
+  String get selectSavedAddress =>
+      isArabic ? 'اختر عنواناً محفوظاً' : 'Select a saved address';
+  String get savedAddressNotice => isArabic
+      ? 'اختر عنواناً من عناوينك المحفوظة'
+      : 'Choose one of your saved addresses';
+  String get selectMockLocation => selectSavedAddress;
+  String get mockLocationNotice => savedAddressNotice;
   String get locationRequired => isArabic
       ? 'اختر موقع الخدمة للمتابعة'
       : 'Select a service location to continue';
   String get reviewRequest => isArabic ? 'مراجعة الطلب' : 'Review request';
   String get reviewRequestMessage => isArabic
-      ? 'راجع المعلومات قبل الإرسال التجريبي'
-      : 'Review the information before mock submission';
+      ? 'راجع المعلومات قبل إرسال الطلب'
+      : 'Review the information before submitting your request';
   String get noDescription =>
       isArabic ? 'لم تتم إضافة وصف' : 'No description added';
-  String get submitMockRequest =>
-      isArabic ? 'إرسال طلب تجريبي' : 'Submit mock request';
-  String get mockSubmissionNotice => isArabic
-      ? 'لن يتم إرسال هذا الطلب إلى أي خادم'
-      : 'This request will not be sent to any backend';
+  String get submitRequest =>
+      isArabic ? 'إرسال الطلب' : 'Submit request';
+  String get submissionNotice => isArabic
+      ? 'سيتم إرسال الطلب إلى منصة أطلب'
+      : 'Your request will be sent to the Otlob platform';
+  String get submissionFailed => isArabic
+      ? 'تعذر إرسال الطلب. حاول مرة أخرى.'
+      : 'Could not submit the request. Please try again.';
   String get requestSubmitted =>
-      isArabic ? 'تم الإرسال التجريبي' : 'Mock submission complete';
+      isArabic ? 'تم إرسال الطلب' : 'Request submitted';
   String get requestSubmittedMessage => isArabic
-      ? 'تم إنشاء نتيجة محلية للعرض فقط'
-      : 'A local result was created for demonstration only';
+      ? 'تم إنشاء الطلب بنجاح'
+      : 'Your request was created successfully';
   String get submissionUnavailable => isArabic
-      ? 'لا توجد نتيجة إرسال تجريبية'
-      : 'No mock submission result is available';
-  String get mockReference => isArabic ? 'المرجع التجريبي' : 'Mock reference';
+      ? 'لا توجد نتيجة إرسال'
+      : 'No submission result is available';
   String get goToRequests =>
       isArabic ? 'الانتقال إلى الطلبات' : 'Go to Requests';
   String get continueLabel => isArabic ? 'متابعة' : 'Continue';

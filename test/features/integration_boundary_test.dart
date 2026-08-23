@@ -5,6 +5,8 @@ import 'package:otlob_customer_app/features/authentication/domain/models/authent
 import 'package:otlob_customer_app/features/authentication/domain/repositories/authentication_repository.dart';
 import 'package:otlob_customer_app/features/profile/data/mock/mock_profile.dart';
 import 'package:otlob_customer_app/features/profile/domain/repositories/customer_profile_repository.dart';
+import 'package:otlob_customer_app/features/addresses/data/mock/mock_addresses.dart';
+import 'package:otlob_customer_app/features/addresses/domain/models/customer_address.dart';
 import 'package:otlob_customer_app/features/requests/data/mock/mock_requests.dart';
 import 'package:otlob_customer_app/features/requests/domain/models/customer_request.dart';
 import 'package:otlob_customer_app/features/requests/domain/repositories/customer_request_repository.dart';
@@ -50,10 +52,10 @@ void main() {
           .listRequests();
       final IntegrationResult<CustomerRequest?> detail = await repository
           .getRequest('request-pending');
-      final IntegrationResult<List<RequestAddress>> addresses = await repository
-          .listSelectableAddresses();
-      final RequestAddress address =
-          (addresses as IntegrationSuccess<List<RequestAddress>>).value.first;
+      final IntegrationResult<List<CustomerAddress>> addresses =
+          await const MockCustomerAddressRepository().listAddresses();
+      final CustomerAddress address =
+          (addresses as IntegrationSuccess<List<CustomerAddress>>).value.first;
       final IntegrationResult<RequestSubmission> submission = await repository
           .createRequest(
             RequestDraft(serviceId: 'home-cleaning', address: address),
