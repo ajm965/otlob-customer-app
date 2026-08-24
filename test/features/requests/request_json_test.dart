@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otlob_customer_app/features/addresses/data/mock/mock_addresses.dart';
+import 'package:otlob_customer_app/features/addresses/domain/models/customer_address.dart';
 import 'package:otlob_customer_app/features/requests/data/http/request_json.dart';
 import 'package:otlob_customer_app/features/requests/domain/models/customer_request.dart';
 
@@ -55,7 +56,7 @@ void main() {
     expect(body.containsKey('location'), isFalse);
   });
 
-  test('buildCreateRequestBody includes location when address is selected', () {
+  test('buildCreateRequestBody sends addressId when address has id', () {
     final Map<String, Object?> body = buildCreateRequestBody(
       RequestDraft(
         serviceId: 'plumbing',
@@ -66,11 +67,94 @@ void main() {
 
     expect(body['serviceId'], 'plumbing');
     expect(body['description'], 'اختبار طلب سباكة');
+    expect(body['addressId'], 'mock-home-address');
+    expect(body.containsKey('location'), isFalse);
+  });
+
+  test('buildCreateRequestBody omits location when addressId is present', () {
+    final Map<String, Object?> body = buildCreateRequestBody(
+      const RequestDraft(
+        serviceId: 'plumbing',
+        description: 'With saved address',
+        address: CustomerAddress(
+          id: 'addr-001',
+          label: 'Home',
+          line1: 'Street',
+          city: 'Riyadh',
+          countryCode: 'SA',
+          latitude: 24.7136,
+          longitude: 46.6753,
+        ),
+      ),
+    );
+
+    expect(body['addressId'], 'addr-001');
+    expect(body.containsKey('location'), isFalse);
+    expect(body.keys.where((String key) => key == 'addressId' || key == 'location'), [
+      'addressId',
+    ]);
+  });
+
+  test('buildCreateRequestBody falls back to location when id is empty', () {
+    final Map<String, Object?> body = buildCreateRequestBody(
+      const RequestDraft(
+        serviceId: 'plumbing',
+        description: 'Coords only',
+        address: CustomerAddress(
+          id: '  ',
+          label: 'Pin',
+          line1: 'Street',
+          city: 'Riyadh',
+          countryCode: 'SA',
+          latitude: 24.7,
+          longitude: 46.7,
+        ),
+      ),
+    );
+
     expect(body.containsKey('addressId'), isFalse);
     expect(
       body['location'],
       <String, Object?>{'latitude': 24.7, 'longitude': 46.7},
     );
+  });
+
+  test('buildCreateRequestBody never sends addressId and location together', () {
+    final List<RequestDraft> drafts = <RequestDraft>[
+      RequestDraft(
+        serviceId: 'plumbing',
+        description: 'Saved',
+        address: MockAddresses.all.first,
+      ),
+      const RequestDraft(
+        serviceId: 'plumbing',
+        description: 'Fallback',
+        address: CustomerAddress(
+          id: '',
+          label: 'Pin',
+          line1: 'Street',
+          city: 'Riyadh',
+          countryCode: 'SA',
+          latitude: 24.7,
+          longitude: 46.7,
+        ),
+      ),
+      const RequestDraft(
+        serviceId: 'plumbing',
+        description: 'No address',
+      ),
+    ];
+
+    for (final RequestDraft draft in drafts) {
+      final Map<String, Object?> body = buildCreateRequestBody(draft);
+      final bool hasAddressId = body.containsKey('addressId');
+      final bool hasLocation = body.containsKey('location');
+      expect(
+        hasAddressId && hasLocation,
+        isFalse,
+        reason: 'body must not contain both addressId and location: $body',
+      );
+    }
   });
 
   test('parseRequestItems maps list envelope', () {

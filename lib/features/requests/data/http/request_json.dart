@@ -69,9 +69,18 @@ Map<String, Object?> buildCreateRequestBody(RequestDraft draft) {
         : draft.description.trim(),
   };
   final CustomerAddress? address = draft.address;
-  if (address != null &&
-      address.latitude != null &&
-      address.longitude != null) {
+  if (address == null) {
+    return body;
+  }
+
+  final String addressId = address.id.trim();
+  if (addressId.isNotEmpty) {
+    // Preferred: backend resolves saved address → GeoPoint; do not send location.
+    body['addressId'] = addressId;
+    return body;
+  }
+
+  if (address.latitude != null && address.longitude != null) {
     body['location'] = <String, Object?>{
       'latitude': address.latitude,
       'longitude': address.longitude,
