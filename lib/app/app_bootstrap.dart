@@ -4,10 +4,13 @@ import 'package:http/http.dart' as http;
 
 import '../config/app_config/app_config.dart';
 import '../config/environment/environment_config.dart';
+import '../core/auth/auth_session.dart';
 import '../core/errors/bootstrap_error_handler.dart';
 import '../core/network/platform_api_client.dart';
 import '../core/router/app_router.dart';
 import '../features/addresses/data/http/http_customer_address_repository.dart';
+import '../features/authentication/data/firebase/firebase_authentication_repository.dart';
+import '../features/authentication/data/http/auth_api_client.dart';
 import '../features/requests/data/http/http_customer_request_repository.dart';
 import '../features/services/data/cached/caching_service_catalog_repository.dart';
 import '../features/services/data/http/http_service_catalog_repository.dart';
@@ -28,15 +31,24 @@ abstract final class AppBootstrap {
     await handler.run(() async {
       WidgetsFlutterBinding.ensureInitialized();
 
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+
       final EnvironmentConfig resolvedEnvironment =
           environment ?? EnvironmentConfig.fromDartDefine();
 
       final AppConfig config = AppConfig.fromEnvironment(resolvedEnvironment);
 
+      final AuthSession authSession = AuthSession();
+
       final PlatformApiClient apiClient = PlatformApiClient(
         client: http.Client(),
         baseUrl: config.apiBaseUrl,
+        accessTokenProvider: authSession.getIdToken,
       );
+
+      final AuthApiClient authApiClient = AuthApiClient(apiClient: apiClient);
 
       final ServiceCatalogRepository serviceRepository =
           CachingServiceCatalogRepository(
@@ -44,13 +56,13 @@ abstract final class AppBootstrap {
           );
 
       final AppRouter router = AppRouter(
+        authSession: authSession,
+        authenticationRepository: FirebaseAuthenticationRepository(
+          authApiClient: authApiClient,
+        ),
         serviceRepository: serviceRepository,
         requestRepository: HttpCustomerRequestRepository(apiClient: apiClient),
         addressRepository: HttpCustomerAddressRepository(apiClient: apiClient),
-      );
-
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
       );
 
       runApp(OtlobApp(config: config, router: router));

@@ -64,8 +64,8 @@ class _RegistrationProfilePageState
   Widget build(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
-    final bool hasRequiredState =
-        auth.flow == AuthenticationFlow.registration && auth.isOtpVerified;
+    final bool hasRequiredState = auth.isOtpVerified &&
+        (auth.flow == AuthenticationFlow.registration || auth.needsProfileBootstrap);
 
     if (!hasRequiredState) {
       return Scaffold(

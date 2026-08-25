@@ -10,18 +10,20 @@ class PlatformApiClient {
     required this.client,
     required this.baseUrl,
     this.timeout = const Duration(seconds: 15),
+    this.accessTokenProvider,
   });
 
   final http.Client client;
   final String baseUrl;
   final Duration timeout;
+  final Future<String?> Function()? accessTokenProvider;
 
   Future<IntegrationResult<Object?>> get(
     String path, {
     Map<String, String>? query,
   }) {
     return _send(
-      (Uri uri) => client.get(uri),
+      (Uri uri, Map<String, String> headers) => client.get(uri, headers: headers),
       path,
       query: query,
     );
@@ -33,13 +35,14 @@ class PlatformApiClient {
     Map<String, String>? query,
   }) {
     return _send(
-      (Uri uri) => client.post(
+      (Uri uri, Map<String, String> headers) => client.post(
         uri,
-        headers: const <String, String>{'content-type': 'application/json'},
+        headers: headers,
         body: body == null ? null : jsonEncode(body),
       ),
       path,
       query: query,
+      json: true,
     );
   }
 
@@ -49,13 +52,14 @@ class PlatformApiClient {
     Map<String, String>? query,
   }) {
     return _send(
-      (Uri uri) => client.patch(
+      (Uri uri, Map<String, String> headers) => client.patch(
         uri,
-        headers: const <String, String>{'content-type': 'application/json'},
+        headers: headers,
         body: body == null ? null : jsonEncode(body),
       ),
       path,
       query: query,
+      json: true,
     );
   }
 
@@ -63,18 +67,24 @@ class PlatformApiClient {
     String path, {
     Map<String, String>? query,
   }) {
-    return _send((Uri uri) => client.delete(uri), path, query: query);
+    return _send(
+      (Uri uri, Map<String, String> headers) => client.delete(uri, headers: headers),
+      path,
+      query: query,
+    );
   }
 
   Future<IntegrationResult<Object?>> _send(
-    Future<http.Response> Function(Uri uri) send,
+    Future<http.Response> Function(Uri uri, Map<String, String> headers) send,
     String path, {
     Map<String, String>? query,
+    bool json = false,
   }) async {
     final Uri uri = _resolve(path, query);
+    final Map<String, String> headers = await _headers(json: json);
     final http.Response response;
     try {
-      response = await send(uri).timeout(timeout);
+      response = await send(uri, headers).timeout(timeout);
     } on TimeoutException {
       return const IntegrationError<Object?>(
         IntegrationFailure(IntegrationFailureKind.network),
@@ -90,6 +100,18 @@ class PlatformApiClient {
     }
 
     return _mapResponse(response);
+  }
+
+  Future<Map<String, String>> _headers({bool json = false}) async {
+    final Map<String, String> headers = <String, String>{};
+    if (json) {
+      headers['content-type'] = 'application/json';
+    }
+    final String? token = await accessTokenProvider?.call();
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
   }
 
   Uri _resolve(String path, Map<String, String>? query) {

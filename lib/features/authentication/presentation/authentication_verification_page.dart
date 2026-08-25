@@ -47,11 +47,12 @@ class _AuthenticationVerificationPageState
             context.go(AppRoute.authentication.path);
             return;
           }
-          context.pushReplacement(
-            widget.flow == AuthenticationFlow.registration
-                ? AppRoute.registrationProfile.path
-                : AppRoute.authenticationSuccess.path,
-          );
+          final AuthenticationState auth = ref.read(mockAuthenticationProvider);
+          if (widget.flow == AuthenticationFlow.registration || auth.needsProfileBootstrap) {
+            context.pushReplacement(AppRoute.registrationProfile.path);
+            return;
+          }
+          context.pushReplacement(AppRoute.authenticationSuccess.path);
         });
   }
 

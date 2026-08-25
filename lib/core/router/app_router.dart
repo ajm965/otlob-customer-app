@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/customer_navigation_shell.dart';
+import '../../core/auth/auth_session.dart';
 import '../../features/authentication/data/mock/mock_authentication.dart';
 import '../../features/authentication/domain/models/authentication_state.dart';
 import '../../features/authentication/domain/repositories/authentication_repository.dart';
@@ -48,12 +49,14 @@ class AppRouter {
   }
 
   AppRouter({
+    AuthSession? authSession,
     AuthenticationRepository? authenticationRepository,
     ServiceCatalogRepository? serviceRepository,
     CustomerRequestRepository? requestRepository,
     CustomerAddressRepository? addressRepository,
     CustomerProfileRepository? profileRepository,
   }) : router = _createRouter(
+         authSession: authSession,
          authenticationRepository:
              authenticationRepository ?? const MockAuthenticationRepository(),
          serviceRepository:
@@ -69,6 +72,7 @@ class AppRouter {
   final GoRouter router;
 
   static GoRouter _createRouter({
+    AuthSession? authSession,
     required AuthenticationRepository authenticationRepository,
     required ServiceCatalogRepository serviceRepository,
     required CustomerRequestRepository requestRepository,
@@ -76,7 +80,21 @@ class AppRouter {
     required CustomerProfileRepository profileRepository,
   }) {
     return GoRouter(
-      initialLocation: AppRoute.home.path,
+      initialLocation: authSession == null
+          ? AppRoute.home.path
+          : AppRoute.authentication.path,
+      refreshListenable: authSession,
+      redirect: (BuildContext context, GoRouterState state) {
+        if (authSession == null) {
+          return null;
+        }
+        final String location = state.matchedLocation;
+        final bool isAuthRoute = location.startsWith(AppRoute.authentication.path);
+        if (!authSession.isSignedIn && !isAuthRoute) {
+          return AppRoute.authentication.path;
+        }
+        return null;
+      },
       routes: <RouteBase>[
         StatefulShellRoute.indexedStack(
           builder:
