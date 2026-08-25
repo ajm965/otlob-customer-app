@@ -57,13 +57,18 @@ class _AuthenticationPhonePageState
         .read(mockAuthenticationProvider.notifier)
         .begin(widget.flow, phone)
         .then((bool started) {
-          if (started && mounted) {
-            context.push(
-              _isRegistration
-                  ? AppRoute.registrationVerification.path
-                  : AppRoute.signInVerification.path,
-            );
+          if (!mounted) {
+            return;
           }
+          if (!started) {
+            setState(() => _errorText = localizations.phoneInvalid);
+            return;
+          }
+          context.push(
+            _isRegistration
+                ? AppRoute.registrationVerification.path
+                : AppRoute.signInVerification.path,
+          );
         });
   }
 

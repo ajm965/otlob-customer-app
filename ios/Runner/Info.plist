@@ -45,5 +45,22 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!--
+	  Required by Firebase Auth Phone Auth reCAPTCHA / callback flow.
+	  Encoded App ID scheme from GOOGLE_APP_ID (colons → dashes, prefix app-).
+	  Without CFBundleURLTypes, FirebaseAuth sets mainBundleUrlTypes = nil and
+	  force-unwraps it in PhoneAuthProvider.verifyPhoneNumber (native crash).
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app-1-846185087169-ios-ff34321710ae8f5f669440</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

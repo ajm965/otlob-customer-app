@@ -5,6 +5,7 @@ class AuthenticationState {
     this.flow,
     this.phone = '',
     this.verificationId,
+    this.forceResendingToken,
     this.isOtpVerified = false,
     this.fullName = '',
     this.hasAcceptedTerms = false,
@@ -15,6 +16,7 @@ class AuthenticationState {
   final AuthenticationFlow? flow;
   final String phone;
   final String? verificationId;
+  final int? forceResendingToken;
   final bool isOtpVerified;
   final String fullName;
   final bool hasAcceptedTerms;
@@ -25,6 +27,7 @@ class AuthenticationState {
     AuthenticationFlow? flow,
     String? phone,
     String? verificationId,
+    int? forceResendingToken,
     bool? isOtpVerified,
     String? fullName,
     bool? hasAcceptedTerms,
@@ -35,6 +38,7 @@ class AuthenticationState {
       flow: flow ?? this.flow,
       phone: phone ?? this.phone,
       verificationId: verificationId ?? this.verificationId,
+      forceResendingToken: forceResendingToken ?? this.forceResendingToken,
       isOtpVerified: isOtpVerified ?? this.isOtpVerified,
       fullName: fullName ?? this.fullName,
       hasAcceptedTerms: hasAcceptedTerms ?? this.hasAcceptedTerms,

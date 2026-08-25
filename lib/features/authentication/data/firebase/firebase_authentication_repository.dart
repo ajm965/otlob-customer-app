@@ -7,17 +7,63 @@ import '../../domain/models/authentication_state.dart';
 import '../../domain/repositories/authentication_repository.dart';
 import '../http/auth_api_client.dart';
 
+typedef PhoneVerificationStarter = Future<void> Function({
+  required String phoneNumber,
+  required void Function(PhoneAuthCredential credential) verificationCompleted,
+  required void Function(FirebaseAuthException error) verificationFailed,
+  required void Function(String verificationId, int? resendToken) codeSent,
+  required void Function(String verificationId) codeAutoRetrievalTimeout,
+  Duration? timeout,
+  int? forceResendingToken,
+});
+
 class FirebaseAuthenticationRepository implements AuthenticationRepository {
   FirebaseAuthenticationRepository({
     FirebaseAuth? firebaseAuth,
     AuthApiClient? authApiClient,
-  })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _authApiClient = authApiClient;
+    PhoneVerificationStarter? phoneVerificationStarter,
+    this.verificationTimeout = const Duration(seconds: 60),
+  })  : _firebaseAuthOverride = firebaseAuth,
+        _authApiClient = authApiClient,
+        _phoneVerificationStarterOverride = phoneVerificationStarter;
 
-  final FirebaseAuth _firebaseAuth;
+  final FirebaseAuth? _firebaseAuthOverride;
   final AuthApiClient? _authApiClient;
+  final PhoneVerificationStarter? _phoneVerificationStarterOverride;
+  final Duration verificationTimeout;
+
+  FirebaseAuth get _firebaseAuth =>
+      _firebaseAuthOverride ?? FirebaseAuth.instance;
+
+  PhoneVerificationStarter get _phoneVerificationStarter =>
+      _phoneVerificationStarterOverride ??
+      _defaultPhoneVerificationStarter(_firebaseAuth);
 
   static final RegExp _e164Pattern = RegExp(r'^\+[1-9]\d{7,14}$');
+
+  static PhoneVerificationStarter _defaultPhoneVerificationStarter(
+    FirebaseAuth firebaseAuth,
+  ) {
+    return ({
+      required String phoneNumber,
+      required void Function(PhoneAuthCredential credential) verificationCompleted,
+      required void Function(FirebaseAuthException error) verificationFailed,
+      required void Function(String verificationId, int? resendToken) codeSent,
+      required void Function(String verificationId) codeAutoRetrievalTimeout,
+      Duration? timeout,
+      int? forceResendingToken,
+    }) {
+      return firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: verificationCompleted,
+        verificationFailed: verificationFailed,
+        codeSent: codeSent,
+        codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+        timeout: timeout ?? const Duration(seconds: 60),
+        forceResendingToken: forceResendingToken,
+      );
+    };
+  }
 
   @override
   bool isValidKsaPhone(String phone) =>
@@ -38,37 +84,82 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
     final Completer<IntegrationResult<AuthenticationState>> completer =
         Completer<IntegrationResult<AuthenticationState>>();
 
-    await _firebaseAuth.verifyPhoneNumber(
-      phoneNumber: normalizedPhone,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        if (completer.isCompleted) {
-          return;
-        }
-        try {
-          await _firebaseAuth.signInWithCredential(credential);
-          final IntegrationResult<AuthenticationState> verified =
-              await _stateAfterSignIn(
-            AuthenticationState(flow: flow, phone: normalizedPhone, isOtpVerified: true),
-          );
-          completer.complete(verified);
-        } on FirebaseAuthException catch (error) {
-          completer.complete(_authError(error));
-        } catch (_) {
-          completer.complete(
-            const IntegrationError<AuthenticationState>(
-              IntegrationFailure(IntegrationFailureKind.unknown),
+    void completeOnce(IntegrationResult<AuthenticationState> result) {
+      if (!completer.isCompleted) {
+        completer.complete(result);
+      }
+    }
+
+    Timer? timeoutTimer;
+    timeoutTimer = Timer(verificationTimeout + const Duration(seconds: 5), () {
+      completeOnce(
+        const IntegrationError<AuthenticationState>(
+          IntegrationFailure(
+            IntegrationFailureKind.network,
+            message: 'Phone verification timed out. Please try again.',
+          ),
+        ),
+      );
+    });
+
+    try {
+      await _phoneVerificationStarter(
+        phoneNumber: normalizedPhone,
+        timeout: verificationTimeout,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          try {
+            await _firebaseAuth.signInWithCredential(credential);
+            final IntegrationResult<AuthenticationState> verified =
+                await _stateAfterSignIn(
+              AuthenticationState(
+                flow: flow,
+                phone: normalizedPhone,
+                isOtpVerified: true,
+              ),
+            );
+            completeOnce(verified);
+          } on FirebaseAuthException catch (error) {
+            completeOnce(_authError(error));
+          } catch (_) {
+            completeOnce(
+              const IntegrationError<AuthenticationState>(
+                IntegrationFailure(IntegrationFailureKind.unknown),
+              ),
+            );
+          }
+        },
+        verificationFailed: (FirebaseAuthException error) {
+          completeOnce(_authError(error));
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          if (verificationId.trim().isEmpty) {
+            completeOnce(
+              const IntegrationError<AuthenticationState>(
+                IntegrationFailure(
+                  IntegrationFailureKind.unknown,
+                  message: 'Missing verification ID from Firebase Phone Auth.',
+                ),
+              ),
+            );
+            return;
+          }
+          completeOnce(
+            IntegrationSuccess<AuthenticationState>(
+              AuthenticationState(
+                flow: flow,
+                phone: normalizedPhone,
+                verificationId: verificationId,
+                forceResendingToken: resendToken,
+              ),
             ),
           );
-        }
-      },
-      verificationFailed: (FirebaseAuthException error) {
-        if (!completer.isCompleted) {
-          completer.complete(_authError(error));
-        }
-      },
-      codeSent: (String verificationId, int? _) {
-        if (!completer.isCompleted) {
-          completer.complete(
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // Prefer codeSent; if it never fired, keep a usable verificationId.
+          if (completer.isCompleted || verificationId.trim().isEmpty) {
+            return;
+          }
+          completeOnce(
             IntegrationSuccess<AuthenticationState>(
               AuthenticationState(
                 flow: flow,
@@ -77,12 +168,26 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
               ),
             ),
           );
-        }
-      },
-      codeAutoRetrievalTimeout: (_) {},
-    );
+        },
+      );
+    } on FirebaseAuthException catch (error) {
+      completeOnce(_authError(error));
+    } catch (error) {
+      completeOnce(
+        IntegrationError<AuthenticationState>(
+          IntegrationFailure(
+            IntegrationFailureKind.unknown,
+            message: error.toString(),
+          ),
+        ),
+      );
+    }
 
-    return completer.future;
+    try {
+      return await completer.future;
+    } finally {
+      timeoutTimer.cancel();
+    }
   }
 
   @override
@@ -91,10 +196,12 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
     String code,
   ) async {
     final String trimmedCode = code.trim();
+    final String? verificationId = state.verificationId?.trim();
     if (trimmedCode.isEmpty ||
         state.flow == null ||
         state.phone.isEmpty ||
-        state.verificationId == null) {
+        verificationId == null ||
+        verificationId.isEmpty) {
       return const IntegrationError<AuthenticationState>(
         IntegrationFailure(IntegrationFailureKind.validation),
       );
@@ -102,7 +209,7 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
 
     try {
       final PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: state.verificationId!,
+        verificationId: verificationId,
         smsCode: trimmedCode,
       );
       await _firebaseAuth.signInWithCredential(credential);
@@ -166,7 +273,8 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
       );
     }
 
-    final IntegrationResult<Object?> currentUser = await authApiClient.getCurrentUser();
+    final IntegrationResult<Object?> currentUser =
+        await authApiClient.getCurrentUser();
     if (currentUser case IntegrationSuccess<Object?>()) {
       return IntegrationSuccess<AuthenticationState>(
         state.copyWith(isComplete: true),
@@ -188,7 +296,7 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
     return IntegrationError<AuthenticationState>(
       IntegrationFailure(
         IntegrationFailureKind.validation,
-        message: error.message,
+        message: error.message ?? error.code,
       ),
     );
   }
