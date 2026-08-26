@@ -100,4 +100,32 @@ class MockCustomerRequestRepository implements CustomerRequestRepository {
       RequestSubmission(reference: 'MOCK-REQ-0001'),
     );
   }
+
+  @override
+  Future<IntegrationResult<CustomerRequest>> publishRequest(
+    String requestId,
+  ) async {
+    final String trimmedId = requestId.trim();
+    if (trimmedId.isEmpty) {
+      return const IntegrationError<CustomerRequest>(
+        IntegrationFailure(IntegrationFailureKind.validation),
+      );
+    }
+    return IntegrationSuccess<CustomerRequest>(
+      CustomerRequest(
+        id: trimmedId,
+        serviceId: 'home-cleaning',
+        serviceTitleAr: 'تنظيف المنزل',
+        serviceTitleEn: 'Home cleaning',
+        reference: trimmedId,
+        descriptionAr: 'طلب منشور',
+        descriptionEn: 'Published request',
+        locationAr: 'المنزل التجريبي، الرياض',
+        locationEn: 'Mock home, Riyadh',
+        dateLabelAr: 'اليوم',
+        dateLabelEn: 'Today',
+        status: CustomerRequestStatus.open,
+      ),
+    );
+  }
 }

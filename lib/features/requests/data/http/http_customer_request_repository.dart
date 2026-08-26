@@ -66,6 +66,28 @@ class HttpCustomerRequestRepository implements CustomerRequestRepository {
     };
   }
 
+  @override
+  Future<IntegrationResult<CustomerRequest>> publishRequest(
+    String requestId,
+  ) async {
+    final String trimmedId = requestId.trim();
+    if (trimmedId.isEmpty) {
+      return const IntegrationError<CustomerRequest>(
+        IntegrationFailure(IntegrationFailureKind.validation),
+      );
+    }
+
+    final IntegrationResult<Object?> result = await apiClient.post(
+      '/v1/requests/${Uri.encodeComponent(trimmedId)}/publish',
+    );
+    return switch (result) {
+      IntegrationError<Object?>(:final IntegrationFailure failure) =>
+        IntegrationError<CustomerRequest>(failure),
+      IntegrationSuccess<Object?>(:final Object? value) =>
+        _parse(() => parseRequest(value)),
+    };
+  }
+
   IntegrationResult<T> _parse<T>(T Function() parse) {
     try {
       return IntegrationSuccess<T>(parse());

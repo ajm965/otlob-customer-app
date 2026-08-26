@@ -94,6 +94,28 @@ class FlowTrackingRequestRepository implements CustomerRequestRepository {
   }
 
   @override
+  Future<IntegrationResult<CustomerRequest>> publishRequest(
+    String requestId,
+  ) async {
+    return IntegrationSuccess<CustomerRequest>(
+      CustomerRequest(
+        id: requestId,
+        serviceId: 'home-cleaning',
+        serviceTitleAr: 'home-cleaning',
+        serviceTitleEn: 'Home Cleaning',
+        reference: requestId,
+        descriptionAr: 'Flow test',
+        descriptionEn: 'Flow test',
+        locationAr: 'Riyadh',
+        locationEn: 'Riyadh',
+        dateLabelAr: 'Today',
+        dateLabelEn: 'Today',
+        status: CustomerRequestStatus.open,
+      ),
+    );
+  }
+
+  @override
   Future<IntegrationResult<CustomerRequest?>> getRequest(String requestId) {
     throw UnimplementedError();
   }

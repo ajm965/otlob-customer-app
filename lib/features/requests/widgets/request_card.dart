@@ -94,12 +94,14 @@ class RequestStatusBadge extends StatelessWidget {
     return OtlobBadge(
       label: switch (status) {
         CustomerRequestStatus.pending => localizations.pending,
+        CustomerRequestStatus.open => localizations.open,
         CustomerRequestStatus.inProgress => localizations.inProgress,
         CustomerRequestStatus.completed => localizations.completed,
         CustomerRequestStatus.cancelled => localizations.cancelled,
       },
       tone: switch (status) {
         CustomerRequestStatus.pending => OtlobBadgeTone.warning,
+        CustomerRequestStatus.open => OtlobBadgeTone.success,
         CustomerRequestStatus.inProgress => OtlobBadgeTone.info,
         CustomerRequestStatus.completed => OtlobBadgeTone.success,
         CustomerRequestStatus.cancelled => OtlobBadgeTone.error,

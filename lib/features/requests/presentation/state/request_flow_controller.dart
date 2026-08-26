@@ -87,6 +87,12 @@ class RequestFlowController extends Notifier<RequestDraft> {
     }
     final RequestSubmission submission =
         (result as IntegrationSuccess<RequestSubmission>).value;
+    final IntegrationResult<CustomerRequest> publishResult = await ref
+        .read(customerRequestRepositoryProvider)
+        .publishRequest(submission.reference);
+    if (publishResult case IntegrationError<CustomerRequest>()) {
+      return false;
+    }
     state = RequestDraft(
       serviceId: state.serviceId,
       description: state.description,

@@ -205,6 +205,44 @@ void main() {
     expect(requests.single.id, 'req-001');
   });
 
+  test('publishRequest posts publish endpoint and maps open status', () async {
+    final HttpCustomerRequestRepository repository = _repository((
+      http.Request request,
+    ) async {
+      expect(request.method, 'POST');
+      expect(request.url.path, '/v1/requests/req-004/publish');
+      return http.Response(
+        jsonEncode(<String, Object?>{
+          'data': <String, Object?>{
+            'id': 'req-004',
+            'marketId': 'sa',
+            'countryCode': 'SA',
+            'customerId': 'offline-customer',
+            'serviceId': 'plumbing',
+            'status': 'open',
+            'description': 'اختبار طلب سباكة',
+            'location': <String, Object?>{'latitude': 24.7, 'longitude': 46.7},
+            'preferredTimeStart': null,
+            'preferredTimeEnd': null,
+            'acceptedOfferId': null,
+            'bookingId': null,
+          },
+        }),
+        200,
+        headers: <String, String>{'content-type': 'application/json'},
+      );
+    });
+
+    final IntegrationResult<CustomerRequest> result = await repository
+        .publishRequest('req-004');
+
+    expect(result, isA<IntegrationSuccess<CustomerRequest>>());
+    expect(
+      (result as IntegrationSuccess<CustomerRequest>).value.status,
+      CustomerRequestStatus.open,
+    );
+  });
+
   test('maps HTTP 404 to notFound', () async {
     final HttpCustomerRequestRepository repository = _repository((
       http.Request request,

@@ -48,8 +48,9 @@ List<CustomerRequest> parseRequestItems(Object? data) {
 CustomerRequestStatus mapPlatformStatus(String status) {
   switch (status) {
     case 'draft':
-    case 'open':
       return CustomerRequestStatus.pending;
+    case 'open':
+      return CustomerRequestStatus.open;
     case 'matched':
     case 'booked':
       return CustomerRequestStatus.inProgress;

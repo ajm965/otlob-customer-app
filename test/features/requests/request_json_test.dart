@@ -33,7 +33,7 @@ void main() {
 
   test('mapPlatformStatus maps backend statuses to customer statuses', () {
     expect(mapPlatformStatus('draft'), CustomerRequestStatus.pending);
-    expect(mapPlatformStatus('open'), CustomerRequestStatus.pending);
+    expect(mapPlatformStatus('open'), CustomerRequestStatus.open);
     expect(mapPlatformStatus('matched'), CustomerRequestStatus.inProgress);
     expect(mapPlatformStatus('booked'), CustomerRequestStatus.inProgress);
     expect(mapPlatformStatus('cancelled'), CustomerRequestStatus.cancelled);
@@ -180,6 +180,6 @@ void main() {
 
     expect(requests, hasLength(1));
     expect(requests.single.id, 'req-001');
-    expect(requests.single.status, CustomerRequestStatus.pending);
+    expect(requests.single.status, CustomerRequestStatus.open);
   });
 }

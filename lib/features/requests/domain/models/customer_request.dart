@@ -1,6 +1,6 @@
 import '../../../addresses/domain/models/customer_address.dart';
 
-enum CustomerRequestStatus { pending, inProgress, completed, cancelled }
+enum CustomerRequestStatus { pending, open, inProgress, completed, cancelled }
 
 class CustomerRequest {
   const CustomerRequest({

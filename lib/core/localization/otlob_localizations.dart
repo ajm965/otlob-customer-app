@@ -44,6 +44,7 @@ class OtlobLocalizations {
       ? 'ستظهر طلباتك هنا بعد إنشاء أول طلب'
       : 'Your requests will appear here after you create one';
   String get pending => isArabic ? 'قيد الانتظار' : 'Pending';
+  String get open => isArabic ? 'مفتوح' : 'Open';
   String get inProgress => isArabic ? 'قيد التنفيذ' : 'In progress';
   String get completed => isArabic ? 'مكتمل' : 'Completed';
   String get cancelled => isArabic ? 'ملغي' : 'Cancelled';

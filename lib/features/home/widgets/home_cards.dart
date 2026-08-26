@@ -134,12 +134,14 @@ class HomeRecentRequestCard extends StatelessWidget {
           OtlobBadge(
             label: switch (request.status) {
               CustomerRequestStatus.pending => localizations.pending,
+              CustomerRequestStatus.open => localizations.open,
               CustomerRequestStatus.inProgress => localizations.inProgress,
               CustomerRequestStatus.completed => localizations.completed,
               CustomerRequestStatus.cancelled => localizations.cancelled,
             },
             tone: switch (request.status) {
               CustomerRequestStatus.pending => OtlobBadgeTone.warning,
+              CustomerRequestStatus.open => OtlobBadgeTone.success,
               CustomerRequestStatus.inProgress => OtlobBadgeTone.info,
               CustomerRequestStatus.completed => OtlobBadgeTone.success,
               CustomerRequestStatus.cancelled => OtlobBadgeTone.error,

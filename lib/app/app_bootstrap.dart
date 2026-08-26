@@ -16,6 +16,7 @@ import '../features/addresses/data/http/http_customer_address_repository.dart';
 import '../features/authentication/data/firebase/firebase_authentication_repository.dart';
 import '../features/authentication/data/http/auth_api_client.dart';
 import '../features/authentication/presentation/state/mock_authentication_controller.dart';
+import '../features/profile/data/http/http_customer_profile_repository.dart';
 import '../features/requests/data/http/http_customer_request_repository.dart';
 import '../features/services/data/cached/caching_service_catalog_repository.dart';
 import '../features/services/data/http/http_service_catalog_repository.dart';
@@ -88,6 +89,7 @@ abstract final class AppBootstrap {
         serviceRepository: serviceRepository,
         requestRepository: HttpCustomerRequestRepository(apiClient: apiClient),
         addressRepository: HttpCustomerAddressRepository(apiClient: apiClient),
+        profileRepository: HttpCustomerProfileRepository(apiClient: apiClient),
       );
 
       runApp(

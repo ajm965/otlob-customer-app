@@ -58,7 +58,7 @@ void main() {
       expect(repository.createRequestCalls, isEmpty);
     });
 
-    test('submit after selecting address calls createRequest', () async {
+    test('submit after selecting address calls createRequest then publishRequest', () async {
       final CustomerAddress address = MockAddresses.all.first;
       final RequestFlowController notifier =
           container.read(requestFlowProvider.notifier);
@@ -69,6 +69,7 @@ void main() {
 
       expect(submitted, isTrue);
       expect(repository.createRequestCalls, hasLength(1));
+      expect(repository.publishRequestCalls, <String>['req-track-001']);
       expect(
         repository.createRequestCalls.single.address,
         address,
@@ -96,6 +97,7 @@ void main() {
 
 class TrackingCustomerRequestRepository implements CustomerRequestRepository {
   final List<RequestDraft> createRequestCalls = <RequestDraft>[];
+  final List<String> publishRequestCalls = <String>[];
 
   @override
   Future<IntegrationResult<RequestSubmission>> createRequest(
@@ -104,6 +106,29 @@ class TrackingCustomerRequestRepository implements CustomerRequestRepository {
     createRequestCalls.add(draft);
     return const IntegrationSuccess<RequestSubmission>(
       RequestSubmission(reference: 'req-track-001'),
+    );
+  }
+
+  @override
+  Future<IntegrationResult<CustomerRequest>> publishRequest(
+    String requestId,
+  ) async {
+    publishRequestCalls.add(requestId);
+    return IntegrationSuccess<CustomerRequest>(
+      CustomerRequest(
+        id: requestId,
+        serviceId: 'home-cleaning',
+        serviceTitleAr: 'home-cleaning',
+        serviceTitleEn: 'Home Cleaning',
+        reference: requestId,
+        descriptionAr: 'Kitchen leak',
+        descriptionEn: 'Kitchen leak',
+        locationAr: '24.71360, 46.67530',
+        locationEn: '24.71360, 46.67530',
+        dateLabelAr: 'Not specified',
+        dateLabelEn: 'Not specified',
+        status: CustomerRequestStatus.open,
+      ),
     );
   }
 

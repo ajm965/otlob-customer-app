@@ -195,6 +195,7 @@ class _RequestsPageState extends State<RequestsPage> {
     return switch (filter) {
       _RequestFilter.all => localizations.all,
       _RequestFilter.pending => localizations.pending,
+      _RequestFilter.open => localizations.open,
       _RequestFilter.inProgress => localizations.inProgress,
       _RequestFilter.completed => localizations.completed,
       _RequestFilter.cancelled => localizations.cancelled,
@@ -205,6 +206,7 @@ class _RequestsPageState extends State<RequestsPage> {
 enum _RequestFilter {
   all(null),
   pending(CustomerRequestStatus.pending),
+  open(CustomerRequestStatus.open),
   inProgress(CustomerRequestStatus.inProgress),
   completed(CustomerRequestStatus.completed),
   cancelled(CustomerRequestStatus.cancelled);
