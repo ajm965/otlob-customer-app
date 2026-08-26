@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/customer_navigation_shell.dart';
+import '../../core/auth/auth_flow_coordinator.dart';
 import '../../core/auth/auth_session.dart';
 import '../../features/authentication/data/mock/mock_authentication.dart';
 import '../../features/authentication/domain/models/authentication_state.dart';
@@ -50,6 +51,7 @@ class AppRouter {
 
   AppRouter({
     AuthSession? authSession,
+    AuthFlowCoordinator? authFlowCoordinator,
     AuthenticationRepository? authenticationRepository,
     ServiceCatalogRepository? serviceRepository,
     CustomerRequestRepository? requestRepository,
@@ -57,6 +59,7 @@ class AppRouter {
     CustomerProfileRepository? profileRepository,
   }) : router = _createRouter(
          authSession: authSession,
+         authFlowCoordinator: authFlowCoordinator,
          authenticationRepository:
              authenticationRepository ?? const MockAuthenticationRepository(),
          serviceRepository:
@@ -73,17 +76,23 @@ class AppRouter {
 
   static GoRouter _createRouter({
     AuthSession? authSession,
+    AuthFlowCoordinator? authFlowCoordinator,
     required AuthenticationRepository authenticationRepository,
     required ServiceCatalogRepository serviceRepository,
     required CustomerRequestRepository requestRepository,
     required CustomerAddressRepository addressRepository,
     required CustomerProfileRepository profileRepository,
   }) {
+    final Listenable? refreshListenable = _authRefreshListenable(
+      authSession,
+      authFlowCoordinator,
+    );
+
     return GoRouter(
       initialLocation: authSession == null
           ? AppRoute.home.path
           : AppRoute.authentication.path,
-      refreshListenable: authSession,
+      refreshListenable: refreshListenable,
       redirect: (BuildContext context, GoRouterState state) {
         if (authSession == null) {
           return null;
@@ -93,6 +102,18 @@ class AppRouter {
         if (!authSession.isSignedIn && !isAuthRoute) {
           return AppRoute.authentication.path;
         }
+
+        final Uri? resumeUri = authFlowCoordinator?.resumeUri;
+        if (resumeUri != null) {
+          final bool onStaleEntryStep =
+              location == AppRoute.authentication.path ||
+              location == AppRoute.signIn.path ||
+              location == AppRoute.registration.path;
+          if (onStaleEntryStep && location != resumeUri.path) {
+            return resumeUri.toString();
+          }
+        }
+
         return null;
       },
       routes: <RouteBase>[
@@ -171,10 +192,7 @@ class AppRouter {
         ),
         ShellRoute(
           builder: (BuildContext context, GoRouterState state, Widget child) {
-            return AuthenticationScope(
-              repository: authenticationRepository,
-              child: child,
-            );
+            return AuthenticationScope(child: child);
           },
           routes: <RouteBase>[
             GoRoute(
@@ -281,5 +299,18 @@ class AppRouter {
         ),
       ],
     );
+  }
+
+  static Listenable? _authRefreshListenable(
+    AuthSession? authSession,
+    AuthFlowCoordinator? authFlowCoordinator,
+  ) {
+    if (authSession == null) {
+      return null;
+    }
+    if (authFlowCoordinator == null) {
+      return authSession;
+    }
+    return Listenable.merge(<Listenable>[authSession, authFlowCoordinator]);
   }
 }

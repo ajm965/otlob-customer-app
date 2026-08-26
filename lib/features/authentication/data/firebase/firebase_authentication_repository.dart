@@ -229,11 +229,15 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
     required String fullName,
     required bool hasAcceptedTerms,
   }) async {
-    if (!state.isOtpVerified || !hasAcceptedTerms || fullName.trim().isEmpty) {
+    if (!state.isOtpVerified || !hasAcceptedTerms) {
       return const IntegrationError<AuthenticationState>(
         IntegrationFailure(IntegrationFailureKind.validation),
       );
     }
+
+    final String resolvedName = fullName.trim().isEmpty
+        ? 'Otlob Customer'
+        : fullName.trim();
 
     final AuthApiClient? authApiClient = _authApiClient;
     if (authApiClient == null) {
@@ -243,7 +247,7 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
     }
 
     final IntegrationResult<Object?> bootstrap = await authApiClient.bootstrap(
-      fullName: fullName.trim(),
+      fullName: resolvedName,
       locale: 'ar',
     );
     if (bootstrap case IntegrationError<Object?>(:final failure)) {
@@ -252,7 +256,7 @@ class FirebaseAuthenticationRepository implements AuthenticationRepository {
 
     return IntegrationSuccess<AuthenticationState>(
       state.copyWith(
-        fullName: fullName.trim(),
+        fullName: resolvedName,
         hasAcceptedTerms: true,
         isComplete: true,
       ),

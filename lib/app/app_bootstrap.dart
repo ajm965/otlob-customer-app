@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config/app_config.dart';
 import '../config/environment/environment_config.dart';
+import '../core/auth/auth_flow_coordinator.dart';
 import '../core/auth/auth_session.dart';
 import '../core/errors/bootstrap_error_handler.dart';
 import '../core/network/platform_api_client.dart';
@@ -11,6 +15,7 @@ import '../core/router/app_router.dart';
 import '../features/addresses/data/http/http_customer_address_repository.dart';
 import '../features/authentication/data/firebase/firebase_authentication_repository.dart';
 import '../features/authentication/data/http/auth_api_client.dart';
+import '../features/authentication/presentation/state/mock_authentication_controller.dart';
 import '../features/requests/data/http/http_customer_request_repository.dart';
 import '../features/services/data/cached/caching_service_catalog_repository.dart';
 import '../features/services/data/http/http_service_catalog_repository.dart';
@@ -35,12 +40,19 @@ abstract final class AppBootstrap {
         options: DefaultFirebaseOptions.currentPlatform,
       );
 
+      if (kDebugMode) {
+        await FirebaseAuth.instance.setSettings(
+          appVerificationDisabledForTesting: true,
+        );
+      }
+
       final EnvironmentConfig resolvedEnvironment =
           environment ?? EnvironmentConfig.fromDartDefine();
 
       final AppConfig config = AppConfig.fromEnvironment(resolvedEnvironment);
 
       final AuthSession authSession = AuthSession();
+      final AuthFlowCoordinator authFlowCoordinator = AuthFlowCoordinator();
 
       final PlatformApiClient apiClient = PlatformApiClient(
         client: http.Client(),
@@ -50,6 +62,20 @@ abstract final class AppBootstrap {
 
       final AuthApiClient authApiClient = AuthApiClient(apiClient: apiClient);
 
+      final FirebaseAuthenticationRepository authenticationRepository =
+          FirebaseAuthenticationRepository(
+            authApiClient: authApiClient,
+          );
+
+      final ProviderContainer appContainer = ProviderContainer(
+        overrides: [
+          authenticationRepositoryProvider.overrideWithValue(
+            authenticationRepository,
+          ),
+          authFlowCoordinatorProvider.overrideWithValue(authFlowCoordinator),
+        ],
+      );
+
       final ServiceCatalogRepository serviceRepository =
           CachingServiceCatalogRepository(
             delegate: HttpServiceCatalogRepository(apiClient: apiClient),
@@ -57,15 +83,19 @@ abstract final class AppBootstrap {
 
       final AppRouter router = AppRouter(
         authSession: authSession,
-        authenticationRepository: FirebaseAuthenticationRepository(
-          authApiClient: authApiClient,
-        ),
+        authFlowCoordinator: authFlowCoordinator,
+        authenticationRepository: authenticationRepository,
         serviceRepository: serviceRepository,
         requestRepository: HttpCustomerRequestRepository(apiClient: apiClient),
         addressRepository: HttpCustomerAddressRepository(apiClient: apiClient),
       );
 
-      runApp(OtlobApp(config: config, router: router));
+      runApp(
+        UncontrolledProviderScope(
+          container: appContainer,
+          child: OtlobApp(config: config, router: router),
+        ),
+      );
     });
   }
 }

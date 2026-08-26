@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:otlob_customer_app/app/otlob_app.dart';
 import 'package:otlob_customer_app/config/app_config/app_config.dart';
@@ -6,11 +7,13 @@ import 'package:otlob_customer_app/config/environment/app_environment.dart';
 import 'package:otlob_customer_app/config/environment/environment_config.dart';
 import 'package:otlob_customer_app/core/router/app_route.dart';
 import 'package:otlob_customer_app/core/router/app_router.dart';
+import 'package:otlob_customer_app/features/authentication/data/mock/mock_authentication.dart';
 import 'package:otlob_customer_app/features/authentication/presentation/authentication_entry_page.dart';
 import 'package:otlob_customer_app/features/authentication/presentation/authentication_phone_page.dart';
 import 'package:otlob_customer_app/features/authentication/presentation/authentication_success_page.dart';
 import 'package:otlob_customer_app/features/authentication/presentation/authentication_verification_page.dart';
 import 'package:otlob_customer_app/features/authentication/presentation/registration_profile_page.dart';
+import 'package:otlob_customer_app/features/authentication/presentation/state/mock_authentication_controller.dart';
 import 'package:otlob_customer_app/features/home/presentation/home_page.dart';
 
 void main() {
@@ -181,14 +184,21 @@ Future<void> _pumpAt(
 }) async {
   final AppRouter router = AppRouter();
   await tester.pumpWidget(
-    OtlobApp(
-      config: AppConfig(
-        environment: const EnvironmentConfig(
-          environment: AppEnvironment.development,
+    ProviderScope(
+      overrides: [
+        authenticationRepositoryProvider.overrideWithValue(
+          const MockAuthenticationRepository(),
         ),
-        initialLocale: initialLocale,
+      ],
+      child: OtlobApp(
+        config: AppConfig(
+          environment: const EnvironmentConfig(
+            environment: AppEnvironment.development,
+          ),
+          initialLocale: initialLocale,
+        ),
+        router: router,
       ),
-      router: router,
     ),
   );
   router.router.go(path);

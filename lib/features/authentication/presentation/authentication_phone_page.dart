@@ -8,6 +8,7 @@ import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
 import '../domain/models/authentication_state.dart';
 import '../widgets/authentication_scaffold.dart';
+import 'auth_flow_navigation.dart';
 import 'state/mock_authentication_controller.dart';
 
 class AuthenticationPhonePage extends ConsumerStatefulWidget {
@@ -24,6 +25,7 @@ class _AuthenticationPhonePageState
     extends ConsumerState<AuthenticationPhonePage> {
   late final TextEditingController _phoneController;
   String? _errorText;
+  bool _isVerifying = false;
 
   bool get _isRegistration => widget.flow == AuthenticationFlow.registration;
 
@@ -41,7 +43,7 @@ class _AuthenticationPhonePageState
     super.dispose();
   }
 
-  void _continue() {
+  Future<void> _continue() async {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
     final String phone = _phoneController.text.trim();
     if (phone.isEmpty) {
@@ -53,33 +55,58 @@ class _AuthenticationPhonePageState
       return;
     }
 
-    ref
+    setState(() {
+      _errorText = null;
+      _isVerifying = true;
+    });
+
+    final bool started = await ref
         .read(mockAuthenticationProvider.notifier)
-        .begin(widget.flow, phone)
-        .then((bool started) {
-          if (!mounted) {
-            return;
-          }
-          if (!started) {
-            setState(() => _errorText = localizations.phoneInvalid);
-            return;
-          }
-          context.push(
-            _isRegistration
-                ? AppRoute.registrationVerification.path
-                : AppRoute.signInVerification.path,
-          );
-        });
+        .begin(widget.flow, phone);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isVerifying = false);
+
+    if (!started) {
+      final String? beginError =
+          ref.read(mockAuthenticationProvider.notifier).lastBeginError;
+      setState(
+        () => _errorText = beginError ?? localizations.phoneInvalid,
+      );
+      return;
+    }
+
+    final AuthenticationState auth = ref.read(mockAuthenticationProvider);
+    if (auth.isOtpVerified) {
+      if (_isRegistration || auth.needsProfileBootstrap) {
+        context.pushReplacement(AppRoute.registrationProfile.path);
+      } else {
+        context.pushReplacement(AppRoute.authenticationSuccess.path);
+      }
+      return;
+    }
+
+    context.pushReplacement(
+      AuthFlowNavigation.verificationPath(
+        flow: widget.flow,
+        phone: auth.phone.isNotEmpty ? auth.phone : phone,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    return AuthenticationScaffold(
-      title: _isRegistration
-          ? localizations.registrationTitle
-          : localizations.signInTitle,
-      children: <Widget>[
+    return PopScope(
+      canPop: !_isVerifying,
+      child: AuthenticationScaffold(
+        title: _isRegistration
+            ? localizations.registrationTitle
+            : localizations.signInTitle,
+        children: <Widget>[
         Text(
           _isRegistration
               ? localizations.registrationMessage
@@ -109,7 +136,16 @@ class _AuthenticationPhonePageState
           onSubmitted: (_) => _continue(),
         ),
         const SizedBox(height: OtlobSpacing.xl),
-        OtlobButton(label: localizations.sendMockCode, onPressed: _continue),
+        if (_isVerifying) ...<Widget>[
+          const LinearProgressIndicator(),
+          const SizedBox(height: OtlobSpacing.md),
+          Text(
+            localizations.verifyingPhoneNumber,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ] else
+          OtlobButton(label: localizations.sendMockCode, onPressed: _continue),
         const SizedBox(height: OtlobSpacing.md),
         Wrap(
           alignment: WrapAlignment.center,
@@ -133,8 +169,10 @@ class _AuthenticationPhonePageState
           ],
         ),
         const SizedBox(height: OtlobSpacing.lg),
-        AuthenticationNotice(message: localizations.localAuthenticationNotice),
-      ],
+        if (!_isVerifying)
+          AuthenticationNotice(message: localizations.localAuthenticationNotice),
+        ],
+      ),
     );
   }
 }

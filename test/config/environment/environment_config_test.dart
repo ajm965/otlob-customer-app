@@ -15,7 +15,10 @@ void main() {
     expect(config.isStaging, isTrue);
     expect(config.isProduction, isFalse);
     expect(config.apiBaseUrl, EnvironmentConfig.defaultApiBaseUrl);
-    expect(config.apiBaseUrl, 'http://127.0.0.1:8080');
+    expect(
+      config.apiBaseUrl,
+      'https://api-lfp2bv24wq-ew.a.run.app',
+    );
   });
 
   test('accepts an explicit non-production API base URL', () {

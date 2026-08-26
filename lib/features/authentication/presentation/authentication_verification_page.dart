@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/auth_flow_coordinator.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
@@ -23,6 +24,58 @@ class _AuthenticationVerificationPageState
     extends ConsumerState<AuthenticationVerificationPage> {
   final TextEditingController _codeController = TextEditingController();
   String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _hydrateAuthState();
+      _resumeVerifiedFlow();
+    });
+  }
+
+  void _hydrateAuthState() {
+    ref.read(mockAuthenticationProvider.notifier).syncFromCoordinator();
+
+    final AuthenticationState current = ref.read(mockAuthenticationProvider);
+    if (current.phone.isNotEmpty && current.flow == widget.flow) {
+      return;
+    }
+
+    final String? phoneFromRoute =
+        GoRouterState.of(context).uri.queryParameters['phone'];
+    if (phoneFromRoute == null || phoneFromRoute.trim().isEmpty) {
+      return;
+    }
+
+    ref.read(mockAuthenticationProvider.notifier).restore(
+          current.copyWith(
+            flow: widget.flow,
+            phone: phoneFromRoute.trim(),
+          ),
+        );
+  }
+
+  AuthenticationState _authState() {
+    _hydrateAuthState();
+    return ref.read(mockAuthenticationProvider);
+  }
+
+  void _resumeVerifiedFlow() {
+    if (!mounted) {
+      return;
+    }
+    final AuthenticationState auth = _authState();
+    if (!auth.isOtpVerified) {
+      return;
+    }
+    if (widget.flow == AuthenticationFlow.registration ||
+        auth.needsProfileBootstrap) {
+      context.pushReplacement(AppRoute.registrationProfile.path);
+      return;
+    }
+    context.pushReplacement(AppRoute.authenticationSuccess.path);
+  }
 
   @override
   void dispose() {
@@ -48,7 +101,8 @@ class _AuthenticationVerificationPageState
             return;
           }
           final AuthenticationState auth = ref.read(mockAuthenticationProvider);
-          if (widget.flow == AuthenticationFlow.registration || auth.needsProfileBootstrap) {
+          if (widget.flow == AuthenticationFlow.registration ||
+              auth.needsProfileBootstrap) {
             context.pushReplacement(AppRoute.registrationProfile.path);
             return;
           }
@@ -56,10 +110,9 @@ class _AuthenticationVerificationPageState
         });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPage(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
+    final AuthenticationState auth = _authState();
     final bool hasRequiredState =
         auth.phone.isNotEmpty && auth.flow == widget.flow;
 
@@ -103,6 +156,19 @@ class _AuthenticationVerificationPageState
         const SizedBox(height: OtlobSpacing.lg),
         AuthenticationNotice(message: localizations.localAuthenticationNotice),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.watch(mockAuthenticationProvider);
+    final AuthFlowCoordinator? coordinator = ref.watch(authFlowCoordinatorProvider);
+    if (coordinator == null) {
+      return _buildPage(context);
+    }
+    return ListenableBuilder(
+      listenable: coordinator,
+      builder: (BuildContext context, Widget? child) => _buildPage(context),
     );
   }
 }

@@ -21,9 +21,10 @@ class EnvironmentConfig {
     );
   }
 
-  /// Local placeholder origin. Override with `--dart-define=API_BASE_URL=...`.
-  /// This is not a production host.
-  static const String defaultApiBaseUrl = 'http://127.0.0.1:8080';
+  /// Override with `--dart-define=API_BASE_URL=...` for a local backend.
+  /// Default targets the deployed otlob-platform-dev API for device/simulator runs.
+  static const String defaultApiBaseUrl =
+      'https://api-lfp2bv24wq-ew.a.run.app';
 
   final AppEnvironment environment;
   final String apiBaseUrl;

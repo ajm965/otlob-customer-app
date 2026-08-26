@@ -155,6 +155,9 @@ class OtlobLocalizations {
       : 'Enter a valid Saudi number in international format';
   String get sendMockCode =>
       isArabic ? 'متابعة إلى رمز تجريبي' : 'Continue to mock code';
+  String get verifyingPhoneNumber => isArabic
+      ? 'جاري التحقق من رقم الجوال… قد تظهر صفحة reCAPTCHA'
+      : 'Verifying your mobile number… a reCAPTCHA step may appear';
   String get localAuthenticationNotice => isArabic
       ? 'هذه تجربة محلية فقط. لن يتم إرسال رمز أو الاتصال بأي خدمة.'
       : 'This is a local demo only. No code is sent and no service is contacted.';
@@ -189,6 +192,9 @@ class OtlobLocalizations {
       : 'Accept the Terms and Privacy Policy to continue';
   String get finishMockRegistration =>
       isArabic ? 'إكمال التسجيل التجريبي' : 'Complete mock registration';
+  String get registrationSubmitFailed => isArabic
+      ? 'تعذّر إكمال التسجيل. تحقق من الاتصال وحاول مرة أخرى.'
+      : 'Could not complete registration. Check your connection and try again.';
   String get authenticationComplete =>
       isArabic ? 'اكتمل الدخول التجريبي' : 'Mock authentication complete';
   String get authenticationCompleteMessage => isArabic

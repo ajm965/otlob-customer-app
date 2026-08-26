@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/auth_flow_coordinator.dart';
 import '../../../core/localization/otlob_localizations.dart';
 import '../../../core/router/app_route.dart';
 import '../../../core/theme/otlob_design_system.dart';
@@ -22,10 +23,13 @@ class _RegistrationProfilePageState
   late final TextEditingController _nameController;
   bool _hasAcceptedTerms = false;
   bool _showTermsError = false;
+  bool _isSubmitting = false;
+  String? _errorText;
 
   @override
   void initState() {
     super.initState();
+    ref.read(mockAuthenticationProvider.notifier).syncFromCoordinator();
     final AuthenticationState state = ref.read(mockAuthenticationProvider);
     _nameController = TextEditingController(text: state.fullName);
     _hasAcceptedTerms = state.hasAcceptedTerms;
@@ -37,35 +41,58 @@ class _RegistrationProfilePageState
     super.dispose();
   }
 
-  void _complete() {
+  AuthenticationState _authState() {
+    ref.read(mockAuthenticationProvider.notifier).syncFromCoordinator();
+    return ref.read(mockAuthenticationProvider);
+  }
+
+  Future<void> _complete() async {
+    if (_isSubmitting) {
+      return;
+    }
     if (!_hasAcceptedTerms) {
       setState(() => _showTermsError = true);
       return;
     }
-    ref
+
+    setState(() {
+      _showTermsError = false;
+      _errorText = null;
+      _isSubmitting = true;
+    });
+
+    final bool completed = await ref
         .read(mockAuthenticationProvider.notifier)
         .completeRegistration(
           fullName: _nameController.text,
           hasAcceptedTerms: _hasAcceptedTerms,
-        )
-        .then((bool completed) {
-          if (!mounted) {
-            return;
-          }
-          if (!completed) {
-            context.go(AppRoute.authentication.path);
-            return;
-          }
-          context.pushReplacement(AppRoute.authenticationSuccess.path);
-        });
+        );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isSubmitting = false);
+
+    if (!completed) {
+      final String? completeError =
+          ref.read(mockAuthenticationProvider.notifier).lastCompleteError;
+      setState(
+        () => _errorText = completeError ??
+            OtlobLocalizations.of(context).registrationSubmitFailed,
+      );
+      return;
+    }
+
+    context.pushReplacement(AppRoute.authenticationSuccess.path);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPage(BuildContext context) {
     final OtlobLocalizations localizations = OtlobLocalizations.of(context);
-    final AuthenticationState auth = ref.watch(mockAuthenticationProvider);
+    final AuthenticationState auth = _authState();
     final bool hasRequiredState = auth.isOtpVerified &&
-        (auth.flow == AuthenticationFlow.registration || auth.needsProfileBootstrap);
+        (auth.flow == AuthenticationFlow.registration ||
+            auth.needsProfileBootstrap);
 
     if (!hasRequiredState) {
       return Scaffold(
@@ -94,7 +121,7 @@ class _RegistrationProfilePageState
           prefixIcon: Icons.person_outline,
           keyboardType: TextInputType.name,
           textInputAction: TextInputAction.done,
-          autofillHints: const <String>[AutofillHints.name],
+          enabled: !_isSubmitting,
         ),
         const SizedBox(height: OtlobSpacing.lg),
         CheckboxListTile(
@@ -103,12 +130,14 @@ class _RegistrationProfilePageState
           contentPadding: EdgeInsets.zero,
           controlAffinity: ListTileControlAffinity.leading,
           title: Text(localizations.acceptTermsAndPrivacy),
-          onChanged: (bool? value) {
-            setState(() {
-              _hasAcceptedTerms = value ?? false;
-              _showTermsError = false;
-            });
-          },
+          onChanged: _isSubmitting
+              ? null
+              : (bool? value) {
+                  setState(() {
+                    _hasAcceptedTerms = value ?? false;
+                    _showTermsError = false;
+                  });
+                },
         ),
         if (_showTermsError)
           Text(
@@ -118,14 +147,39 @@ class _RegistrationProfilePageState
               color: Theme.of(context).colorScheme.error,
             ),
           ),
+        if (_errorText != null) ...<Widget>[
+          const SizedBox(height: OtlobSpacing.md),
+          Text(
+            _errorText!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+        ],
         const SizedBox(height: OtlobSpacing.xl),
-        OtlobButton(
-          label: localizations.finishMockRegistration,
-          onPressed: _complete,
-        ),
+        if (_isSubmitting)
+          const LinearProgressIndicator()
+        else
+          OtlobButton(
+            label: localizations.finishMockRegistration,
+            onPressed: _complete,
+          ),
         const SizedBox(height: OtlobSpacing.lg),
         AuthenticationNotice(message: localizations.localAuthenticationNotice),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.watch(mockAuthenticationProvider);
+    final AuthFlowCoordinator? coordinator = ref.watch(authFlowCoordinatorProvider);
+    if (coordinator == null) {
+      return _buildPage(context);
+    }
+    return ListenableBuilder(
+      listenable: coordinator,
+      builder: (BuildContext context, Widget? child) => _buildPage(context),
     );
   }
 }
