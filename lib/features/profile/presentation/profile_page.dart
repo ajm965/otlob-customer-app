@@ -80,16 +80,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Text(
-                                      profile.displayName(
-                                        isArabic: localizations.isArabic,
-                                      ),
+                                      profile.fullName,
                                       style: Theme.of(
                                         context,
                                       ).textTheme.titleLarge,
                                     ),
                                     const SizedBox(height: OtlobSpacing.xs),
                                     Text(
-                                      profile.summary(
+                                      profile.localizedPrimaryRole(
                                         isArabic: localizations.isArabic,
                                       ),
                                       style: Theme.of(context)

@@ -6,10 +6,10 @@ typedef MockProfile = CustomerProfile;
 
 abstract final class MockProfileData {
   static const CustomerProfile customer = CustomerProfile(
-    displayNameAr: 'عميل أطلب',
-    displayNameEn: 'Otlob customer',
-    summaryAr: 'ملف شخصي تجريبي للعرض فقط',
-    summaryEn: 'Mock profile for presentation only',
+    id: 'mock-customer',
+    fullName: 'Otlob customer',
+    locale: 'ar',
+    primaryRole: 'customer',
   );
 }
 
@@ -19,4 +19,41 @@ class MockCustomerProfileRepository implements CustomerProfileRepository {
   @override
   Future<IntegrationResult<CustomerProfile>> getCurrentProfile() async =>
       const IntegrationSuccess<CustomerProfile>(MockProfileData.customer);
+
+  @override
+  Future<IntegrationResult<CustomerProfile>> updateCurrentProfile({
+    String? fullName,
+    String? locale,
+  }) async {
+    final String? trimmedName = fullName?.trim();
+    final String? normalizedLocale = locale?.trim().toLowerCase();
+
+    String? nextFullName;
+    if (trimmedName != null && trimmedName.isNotEmpty) {
+      nextFullName = trimmedName;
+    }
+
+    String? nextLocale;
+    if (normalizedLocale == 'ar' || normalizedLocale == 'en') {
+      nextLocale = normalizedLocale;
+    }
+
+    if (nextFullName == null && nextLocale == null) {
+      return const IntegrationError<CustomerProfile>(
+        IntegrationFailure(
+          IntegrationFailureKind.validation,
+          message: 'At least one profile field must be provided.',
+        ),
+      );
+    }
+
+    return IntegrationSuccess<CustomerProfile>(
+      CustomerProfile(
+        id: MockProfileData.customer.id,
+        fullName: nextFullName ?? MockProfileData.customer.fullName,
+        locale: nextLocale ?? MockProfileData.customer.locale,
+        primaryRole: MockProfileData.customer.primaryRole,
+      ),
+    );
+  }
 }

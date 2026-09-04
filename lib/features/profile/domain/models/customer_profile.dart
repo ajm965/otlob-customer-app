@@ -1,18 +1,28 @@
 class CustomerProfile {
   const CustomerProfile({
-    required this.displayNameAr,
-    required this.displayNameEn,
-    required this.summaryAr,
-    required this.summaryEn,
+    required this.id,
+    required this.fullName,
+    required this.locale,
+    required this.primaryRole,
   });
 
-  final String displayNameAr;
-  final String displayNameEn;
-  final String summaryAr;
-  final String summaryEn;
+  final String id;
+  final String fullName;
+  final String locale;
+  final String primaryRole;
 
-  String displayName({required bool isArabic}) =>
-      isArabic ? displayNameAr : displayNameEn;
-
-  String summary({required bool isArabic}) => isArabic ? summaryAr : summaryEn;
+  /// Localized label for [primaryRole] (`customer`, `technician`,
+  /// `company_operator`).
+  String localizedPrimaryRole({required bool isArabic}) {
+    switch (primaryRole) {
+      case 'customer':
+        return isArabic ? 'عميل' : 'Customer';
+      case 'technician':
+        return isArabic ? 'فني' : 'Technician';
+      case 'company_operator':
+        return isArabic ? 'مشغل شركة' : 'Company operator';
+      default:
+        return isArabic ? 'مستخدم' : 'User';
+    }
+  }
 }
